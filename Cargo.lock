@@ -997,11 +997,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "valhalla-client-rs"
+name = "valhalla-client"
 version = "0.1.0"
 dependencies = [
  "geo-types",
  "gpx",
+ "log",
  "reqwest",
  "serde",
  "serde_json",

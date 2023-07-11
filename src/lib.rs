@@ -20,6 +20,7 @@
 //! let gpx = response.into();
 //! ```
 // Documentation: https://valhalla.github.io/valhalla/api/
+use log::debug;
 use serde::{Deserialize, Serialize};
 
 const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
@@ -819,7 +820,10 @@ impl Valhalla {
     ///
     /// See https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference for details
     pub fn route(&self, manifest: Manifest) -> Result<Trip, Error> {
-        println!("{}", serde_json::to_string(&manifest).unwrap());
+        debug!(
+            "Sending routing request: {}",
+            serde_json::to_string(&manifest).unwrap()
+        );
         let mut url = self.base_url.clone();
         url.path_segments_mut()
             .expect("base_url is not a valid base url")
@@ -837,7 +841,6 @@ impl Valhalla {
         let text = response.text().map_err(Error::Reqwest)?;
         // let route: Trip = response.json().map_err(Error::Reqwest)?;
         let response: Response = serde_json::from_str(&text).map_err(Error::Serde)?;
-        println!("{:?}", response);
         Ok(response.trip)
     }
 }
