@@ -866,8 +866,8 @@ impl From<Trip> for gpx::Gpx {
             .flat_map(|leg| {
                 leg.maneuvers.iter().map(|m| {
                     let p = &leg.shape[m.begin_shape_index];
-                    let mut wp = gpx::Waypoint::new(p.into());
-                    wp
+                    
+                    gpx::Waypoint::new(p.into())
                 })
             })
             .collect();
