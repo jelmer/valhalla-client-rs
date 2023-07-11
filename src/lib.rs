@@ -5,19 +5,21 @@
 //! # Examples
 //!
 //! ```
-//! use valhalla::Valhalla;
+//! use valhalla_client::{Valhalla, Location, Manifest};;
 //! let valhalla = Valhalla::default();
 //!
-//! let manifest = valhalla::Manifest {
-//!     locations: vec![valhalla::Location::new(52.3676, 4.9041), Point::new(52.0907, 5.1214)],
-//!     costing: valhalla::Costing::Bicycle,
+//! let manifest = Manifest {
+//!     locations: vec![Location::new(4.9041, 52.3676), Location::new(5.1214, 52.0907)],
+//!     costing: valhalla_client::Costing::Bicycle,
+//!     ..Default::default()
 //! };
 //!
 //! let response = valhalla.route(manifest).unwrap();
 //!
 //! println!("{:#?}", response);
 //!
-//! let gpx = response.into();
+//! // If the gpx feature is enabled, you can convert the response to a gpx::Gpx object
+//! // let gpx = response.trip.into();
 //! ```
 // Documentation: https://valhalla.github.io/valhalla/api/
 use log::debug;
@@ -866,7 +868,7 @@ impl From<Trip> for gpx::Gpx {
             .flat_map(|leg| {
                 leg.maneuvers.iter().map(|m| {
                     let p = &leg.shape[m.begin_shape_index];
-                    
+
                     gpx::Waypoint::new(p.into())
                 })
             })
