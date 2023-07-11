@@ -5,6 +5,7 @@ edition = "2021"
 description = "API client for the Valhalla routing engine"
 authors = ["Jelmer Vernooĳ <jelmer@jelmer.uk>"]
 license = "Apache-2.0"
+repository = "https://github.com/jelmer/valhalla-client-rs"
 
 [dependencies]
 geo-types = "0.7.10"
