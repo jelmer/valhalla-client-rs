@@ -234,9 +234,9 @@ dependencies = [
 
 [[package]]
 name = "geo-types"
-version = "0.7.10"
+version = "0.7.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1019f6d372c5b53143f08deee4168d05c22920fe5e0f51f0dfb0e8ffb67ec11e"
+checksum = "9ff16065e5720f376fbced200a5ae0f47ace85fd70b7e54269790281353b6d61"
 dependencies = [
  "approx",
  "num-traits",
@@ -998,7 +998,7 @@ dependencies = [
 
 [[package]]
 name = "valhalla-client"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "geo-types",
  "gpx",
