@@ -183,6 +183,11 @@ pub enum ManeuverType {
     PostTransitConnectionDestination,
     MergeRight,
     MergeLeft,
+    ElevatorEnter,
+    StepsEnter,
+    EscalatorEnter,
+    BuildingEnter,
+    BuildingExit,
 }
 
 #[derive(Deserialize, Clone, Debug)]
