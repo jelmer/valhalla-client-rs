@@ -183,6 +183,11 @@ pub enum ManeuverType {
     PostTransitConnectionDestination,
     MergeRight,
     MergeLeft,
+    ElevatorEnter,
+    StepsEnter,
+    EscalatorEnter,
+    BuildingEnter,
+    BuildingExit,
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -202,7 +207,7 @@ pub struct Maneuver {
 
     /// Text suitable for use as a verbal message immediately prior to the maneuver transition. For
     /// example "Turn right onto North Prince Street, U.S. 2 22".
-    pub verbal_pre_transition_instruction: String,
+    pub verbal_pre_transition_instruction: Option<String>,
     /// Text suitable for use as a verbal message immediately after the maneuver transition. For
     /// example "Continue on U.S. 2 22 for 3.9 miles".
     pub verbal_post_transition_instruction: Option<String>,
