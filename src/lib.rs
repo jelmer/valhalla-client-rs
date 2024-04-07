@@ -386,7 +386,7 @@ pub enum BicycleType {
     Mountain,
 }
 
-#[derive(Serialize, Default)]
+#[derive(Serialize, Default, Clone, Copy)]
 pub enum Costing {
     /// Standard costing for driving routes by car, motorcycle, truck, and so on that obeys automobile
     /// driving rules, such as access and turn restrictions. Auto provides a short time path (though
