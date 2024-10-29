@@ -1,6 +1,6 @@
 //! This crate contains the types and functions for interacting with the Valhalla API.
 //!
-//! At the moment, only the turn-by-turn routing API is implemented.
+//! At the moment, only the routing API is implemented.
 //!
 //! # Examples
 //!
@@ -43,36 +43,6 @@ pub struct Trip {
     pub id: Option<String>,
     pub legs: Vec<Leg>,
     pub summary: Summary,
-}
-#[derive(Debug, Default, Clone, Deserialize, PartialEq)]
-pub struct MatrixLocation {
-    pub lat: f64,
-    pub lon: f64,
-}
-#[derive(Deserialize, Debug, Clone)]
-pub struct MatrixTrip {
-    #[serde(default)]
-    pub id: String,
-    #[serde(default)]
-    pub algorithm: String,
-    pub units: Units,
-
-    pub sources: Vec<MatrixLocation>,
-    pub targets: Vec<MatrixLocation>,
-    pub sources_to_targets: Vec<Vec<MatrixSummary>>,
-    // pub status: i32,
-    // pub status_message: String,
-    // pub language: String,
-    // pub warnings: Option<Vec<MatrixSummary>>,
-    // pub legs: Vec<Leg>,
-    // pub summary: Summary,
-}
-#[derive(Deserialize, Debug, Clone)]
-pub struct MatrixSummary {
-    pub time: f64,
-    pub distance: f64,
-    pub to_index: u8,
-    pub from_index: u8,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -627,65 +597,6 @@ pub struct Manifest {
     /// or not. Default is true.
     pub roundabout_exits: bool,
 }
-#[derive(Serialize, Default)]
-pub struct MatrixManifest {
-    pub costing: Costing,
-
-    #[serde(rename = "costing_options")]
-    pub bicycle_costing_options: Option<BicycleCostingOptions>,
-
-    pub sources: Vec<Location>,
-    pub targets: Vec<Location>,
-
-    /// Distance units for output. Allowable unit types are miles (or mi) and kilometers (or km).
-    /// If no unit type is specified, the units default to kilometers.
-    pub units: Units,
-
-    /// Name your route request. If id is specified, the naming will be sent thru to the response.
-    pub id: String,
-
-    /// The language of the narration instructions based on the IETF BCP 47 language tag string. If
-    /// no language is specified or the specified language is unsupported, United States-based
-    /// English (en-US) is used. Currently supported language list
-    pub language: String,
-
-    pub directions_type: DirectionsType,
-
-    /// A number denoting how many alternate routes should be provided. There may be no alternates
-    /// or less alternates than the user specifies. Alternates are not yet supported on multipoint
-    /// routes (that is, routes with more than 2 locations). They are also not supported on time
-    /// dependent routes.
-    pub alternates: i32,
-
-    /// A set of locations to exclude or avoid within a route can be specified using a JSON array
-    /// of avoid_locations. The avoid_locations have the same format as the locations list. At a
-    /// minimum each avoid location must include latitude and longitude. The avoid_locations are
-    /// mapped to the closest road or roads and these roads are excluded from the route path
-    /// computation.
-    pub exclude_locations: Vec<Location>,
-
-    /// One or multiple exterior rings of polygons in the form of nested JSON arrays, e.g. [[[lon1,
-    /// lat1], [lon2,lat2]],[[lon1,lat1],[lon2,lat2]]]. Roads intersecting these rings will be
-    /// avoided during path finding. If you only need to avoid a few specific roads, it's much more
-    /// efficient to use exclude_locations. Valhalla will close open rings (i.e. copy the first
-    /// coordinate to the last position).
-    pub exclude_polygons: Vec<Vec<(f64, f64)>>,
-
-    /// When present and true, the successful route response will include a key linear_references.
-    /// Its value is an array of base64-encoded OpenLR location references, one for each graph edge
-    /// of the road network matched by the input trace.
-    pub linear_references: bool,
-
-    /// Prioritize bidirectional a* when date_time.type = depart_at/current. By default
-    /// time_dependent_forward a* is used in these cases, but bidirectional a* is much faster.
-    /// Currently it does not update the time (and speeds) when searching for the route path, but
-    /// the ETA on that route is recalculated based on the time-dependent speeds
-    pub prioritize_bidirectional: bool,
-
-    /// A boolean indicating whether exit instructions at roundabouts should be added to the output
-    /// or not. Default is true.
-    pub roundabout_exits: bool,
-}
 
 #[derive(Serialize, Deserialize, Default, Clone, Copy, Debug)]
 pub enum LocationType {
@@ -805,7 +716,7 @@ pub struct Location {
     ///  allow u-turns but do generate legs and arrival/departure maneuvers. If no type is
     ///  provided, the type is assumed to be a break. The types of the first and last locations are
     ///  ignored and are treated as breaks.
-    #[serde(rename = "type", default)]
+    #[serde(rename = "type")]
     pub type_: LocationType,
 
     /// (optional) Preferred direction of travel for the start from the location. This can be
@@ -938,60 +849,6 @@ impl Valhalla {
         // let route: Trip = response.json().map_err(Error::Reqwest)?;
         let response: Response = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response.trip)
-    }
-    /// Make a routing request
-    ///
-    /// See https://valhalla.github.io/valhalla/api/optimized/api-reference/ for details
-    pub fn optimized_route(&self, manifest: Manifest) -> Result<Trip, Error> {
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("optimized_route");
-        let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
-        // let route: Trip = response.json().map_err(Error::Reqwest)?;
-        debug!("{text}");
-        let response: Response = serde_json::from_str(&text).map_err(Error::Serde)?;
-        Ok(response.trip)
-    }
-    pub fn matrix_route(&self, manifest: MatrixManifest) -> Result<MatrixTrip, Error> {
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("sources_to_targets");
-        debug!("url: {url}");
-        let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
-        // let route: Trip = response.json().map_err(Error::Reqwest)?;
-        debug!("{text}");
-        let response: MatrixTrip = serde_json::from_str(&text).map_err(Error::Serde)?;
-        Ok(response)
     }
 }
 
