@@ -16,10 +16,10 @@
 //!
 //! let response = valhalla.route(manifest).unwrap();
 //!
-//! println!("{:#?}", response);
+//! println!("{response:#?}");
 //!
-//! // If the gpx feature is enabled, you can convert the response to a gpx::Gpx object
-//! // let gpx = response.trip.into();
+//! // If the gpx feature is enabled, you can convert the response to a `gpx::Gpx` object
+//! // let gpx = response.into();
 //! ```
 // Documentation: https://valhalla.github.io/valhalla/api/
 use log::debug;
@@ -291,15 +291,15 @@ pub struct Maneuver {
     /// Contains the attributes that describe a specific transit route. See below for details.
     pub transit_info: Option<TransitInfo>,
     /// Contains the attributes that describe a specific transit stop. See below for details.
-    /// True if the verbal_pre_transition_instruction has been appended with the verbal instruction
+    /// True if the `verbal_pre_transition_instruction` has been appended with the verbal instruction
     /// of the next maneuver.
     pub verbal_multi_cue: Option<bool>,
 
     /// Travel mode.
     pub travel_mode: TravelMode,
 
-    /// Used when travel_mode is bikeshare. Describes bike share maneuver. The default value is
-    /// NoneAction
+    /// Used when `travel_mode` is bikeshare. Describes bike share maneuver. The default value is
+    /// `NoneAction`
     pub bss_maneuver_type: Option<BssManeuverType>,
 }
 
@@ -333,7 +333,7 @@ pub struct TransitInfo {
     /// Operator/agency name. For example, "BART", "King County Marine Division", and so on. Short
     /// name is used over long name.
     pub operator_name: String,
-    /// Operator/agency URL. For example, "http://web.mta.info/".
+    /// Operator/agency URL. For example, "<http://web.mta.info>/".
     pub operator_url: String,
     /// A list of the stops/stations associated with a specific transit route. See below for
     /// details.
@@ -437,7 +437,7 @@ pub enum Costing {
     /// for bus access on the roads.
     #[serde(rename = "bus")]
     Bus,
-    /// A combination of pedestrian and bicycle. Use bike share station(amenity:bicycle_rental) to
+    /// A combination of pedestrian and bicycle. Use bike share `station(amenity:bicycle_rental)` to
     /// change the travel mode
     #[serde(rename = "bikeshare")]
     Bikeshare,
@@ -452,9 +452,9 @@ pub enum Costing {
     /// for taxi lane access on the roads and favors those roads.
     #[serde(rename = "taxi")]
     Taxi,
-    /// Standard costing for travel by motor scooter or moped. By default, motor_scooter costing will
+    /// Standard costing for travel by motor scooter or moped. By default, `motor_scooter` costing will
     /// avoid higher class roads unless the country overrides allows motor scooters on these roads.
-    /// Motor scooter routes follow regular roads when needed, but avoid roads without motor_scooter,
+    /// Motor scooter routes follow regular roads when needed, but avoid roads without `motor_scooter`,
     /// moped, or mofa access.
     #[serde(rename = "motor_scooter")]
     MotorScooter,
@@ -488,7 +488,7 @@ pub struct BicycleCostingOptions {
 
     /// A cyclist's propensity to use roads alongside other vehicles. This is a range of values
     /// from 0 to 1, where 0 attempts to avoid roads and stay on cycleways and paths, and 1
-    /// indicates the rider is more comfortable riding on roads. Based on the use_roads factor,
+    /// indicates the rider is more comfortable riding on roads. Based on the `use_roads` factor,
     /// roads with certain classifications and higher speeds are penalized in an attempt to
     /// avoid them when finding the best path. The default value is 0.5.
     pub use_roads: Option<f64>,
@@ -496,7 +496,7 @@ pub struct BicycleCostingOptions {
     /// A cyclist's desire to tackle hills in their routes. This is a range of values from 0 to
     /// 1, where 0 attempts to avoid hills and steep grades even if it means a longer (time and
     /// distance) path, while 1 indicates the rider does not fear hills and steeper grades.
-    /// Based on the use_hills factor, penalties are applied to roads based on elevation change
+    /// Based on the `use_hills` factor, penalties are applied to roads based on elevation change
     /// and grade. These penalties help the path avoid hilly roads in favor of flatter roads or
     /// less steep grades where available. Note that it is not always possible to find
     /// alternate paths to avoid hills (for example when route locations are in mountainous
@@ -599,8 +599,8 @@ pub struct Manifest {
     pub alternates: i32,
 
     /// A set of locations to exclude or avoid within a route can be specified using a JSON array
-    /// of avoid_locations. The avoid_locations have the same format as the locations list. At a
-    /// minimum each avoid location must include latitude and longitude. The avoid_locations are
+    /// of `avoid_locations`. The `avoid_locations` have the same format as the locations list. At a
+    /// minimum each avoid location must include latitude and longitude. The `avoid_locations` are
     /// mapped to the closest road or roads and these roads are excluded from the route path
     /// computation.
     pub exclude_locations: Vec<Location>,
@@ -608,17 +608,17 @@ pub struct Manifest {
     /// One or multiple exterior rings of polygons in the form of nested JSON arrays, e.g. [[[lon1,
     /// lat1], [lon2,lat2]],[[lon1,lat1],[lon2,lat2]]]. Roads intersecting these rings will be
     /// avoided during path finding. If you only need to avoid a few specific roads, it's much more
-    /// efficient to use exclude_locations. Valhalla will close open rings (i.e. copy the first
+    /// efficient to use `exclude_locations`. Valhalla will close open rings (i.e. copy the first
     /// coordinate to the last position).
     pub exclude_polygons: Vec<Vec<(f64, f64)>>,
 
-    /// When present and true, the successful route response will include a key linear_references.
-    /// Its value is an array of base64-encoded OpenLR location references, one for each graph edge
+    /// When present and true, the successful route response will include a key `linear_references`.
+    /// Its value is an array of base64-encoded `OpenLR` location references, one for each graph edge
     /// of the road network matched by the input trace.
     pub linear_references: bool,
 
-    /// Prioritize bidirectional a* when date_time.type = depart_at/current. By default
-    /// time_dependent_forward a* is used in these cases, but bidirectional a* is much faster.
+    /// Prioritize bidirectional a* when `date_time.type` = `depart_at/current`. By default
+    /// `time_dependent_forward` a* is used in these cases, but bidirectional a* is much faster.
     /// Currently it does not update the time (and speeds) when searching for the route path, but
     /// the ETA on that route is recalculated based on the time-dependent speeds
     pub prioritize_bidirectional: bool,
@@ -658,8 +658,8 @@ pub struct MatrixManifest {
     pub alternates: i32,
 
     /// A set of locations to exclude or avoid within a route can be specified using a JSON array
-    /// of avoid_locations. The avoid_locations have the same format as the locations list. At a
-    /// minimum each avoid location must include latitude and longitude. The avoid_locations are
+    /// of `avoid_locations`. The `avoid_locations` have the same format as the locations list. At a
+    /// minimum each avoid location must include latitude and longitude. The `avoid_locations` are
     /// mapped to the closest road or roads and these roads are excluded from the route path
     /// computation.
     pub exclude_locations: Vec<Location>,
@@ -667,17 +667,17 @@ pub struct MatrixManifest {
     /// One or multiple exterior rings of polygons in the form of nested JSON arrays, e.g. [[[lon1,
     /// lat1], [lon2,lat2]],[[lon1,lat1],[lon2,lat2]]]. Roads intersecting these rings will be
     /// avoided during path finding. If you only need to avoid a few specific roads, it's much more
-    /// efficient to use exclude_locations. Valhalla will close open rings (i.e. copy the first
+    /// efficient to use `exclude_locations`. Valhalla will close open rings (i.e. copy the first
     /// coordinate to the last position).
     pub exclude_polygons: Vec<Vec<(f64, f64)>>,
 
-    /// When present and true, the successful route response will include a key linear_references.
-    /// Its value is an array of base64-encoded OpenLR location references, one for each graph edge
+    /// When present and true, the successful route response will include a key `linear_references`.
+    /// Its value is an array of base64-encoded `OpenLR` location references, one for each graph edge
     /// of the road network matched by the input trace.
     pub linear_references: bool,
 
-    /// Prioritize bidirectional a* when date_time.type = depart_at/current. By default
-    /// time_dependent_forward a* is used in these cases, but bidirectional a* is much faster.
+    /// Prioritize bidirectional a* when `date_time.type` = `depart_at/current`. By default
+    /// `time_dependent_forward` a* is used in these cases, but bidirectional a* is much faster.
     /// Currently it does not update the time (and speeds) when searching for the route path, but
     /// the ETA on that route is recalculated based on the time-dependent speeds
     pub prioritize_bidirectional: bool,
@@ -739,12 +739,12 @@ impl Location {
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Location {
     /// Latitude of the location in degrees. This is assumed to be both the routing location and
-    /// the display location if no display_lat and display_lon are provided.
+    /// the display location if no `display_lat` and `display_lon` are provided.
     #[serde(rename = "lat")]
     pub latitude: f64,
 
     /// Longitude of the location in degrees. This is assumed to be both the routing location and
-    /// the display location if no display_lat and display_lon are provided.
+    /// the display location if no `display_lat` and `display_lon` are provided.
     #[serde(rename = "lon")]
     pub longitude: f64,
 
@@ -795,13 +795,13 @@ pub struct Location {
     /// will make no attempt limit the side of street that is available for the route.
     pub preferred_side: Option<Side>,
 
-    ///  Type of location, either break, through, via or break_through. Each type controls two
+    ///  Type of location, either break, through, via or `break_through`. Each type controls two
     ///  characteristics: whether or not to allow a u-turn at the location and whether or not to
     ///  generate guidance/legs at the location. A break is a location at which we allows u-turns
     ///  and generate legs and arrival/departure maneuvers. A through location is a location at
     ///  which we neither allow u-turns nor generate legs or arrival/departure maneuvers. A via
     ///  location is a location at which we allow u-turns but do not generate legs or
-    ///  arrival/departure maneuvers. A break_through location is a location at which we do not
+    ///  arrival/departure maneuvers. A `break_through` location is a location at which we do not
     ///  allow u-turns but do generate legs and arrival/departure maneuvers. If no type is
     ///  provided, the type is assumed to be a break. The types of the first and last locations are
     ///  ignored and are treated as breaks.
@@ -823,14 +823,14 @@ pub struct Location {
     pub name: Option<String>,
 
     /// Latitude of the map location in degrees. If provided the lat and lon parameters will be
-    /// treated as the routing location and the display_lat and display_lon will be used to
-    /// determine the side of street. Both display_lat and display_lon must be provided and valid
+    /// treated as the routing location and the `display_lat` and `display_lon` will be used to
+    /// determine the side of street. Both `display_lat` and `display_lon` must be provided and valid
     /// to achieve the desired effect.
     pub display_lat: Option<f64>,
 
     /// Longitude of the map location in degrees. If provided the lat and lon parameters will be
-    /// treated as the routing location and the display_lat and display_lon will be used to
-    /// determine the side of street. Both display_lat and display_lon must be provided and valid
+    /// treated as the routing location and the `display_lat` and `display_lon` will be used to
+    /// determine the side of street. Both `display_lat` and `display_lon` must be provided and valid
     /// to achieve the desired effect.
     pub display_lon: Option<f64>,
 
@@ -853,10 +853,10 @@ pub struct Location {
     /// side of street is set to none. The default is 1000 meters.
     pub street_side_max_distance: Option<f64>,
 
-    /// Disables the preferred_side when set to same or opposite if the edge has a road class less
-    /// than that provided by street_side_cutoff. The road class must be one of the following
+    /// Disables the `preferred_side` when set to same or opposite if the edge has a road class less
+    /// than that provided by `street_side_cutoff`. The road class must be one of the following
     /// strings: motorway, trunk, primary, secondary, tertiary, unclassified, residential,
-    /// service_other. The default value is service_other so that preferred_side will not be
+    /// `service_other`. The default value is `service_other` so that `preferred_side` will not be
     /// disabled for any edges.
     pub street_side_cutoff: Option<f64>,
 }
@@ -877,10 +877,10 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::Reqwest(e) => write!(f, "reqwest error: {}", e),
-            Error::Url(e) => write!(f, "url error: {}", e),
-            Error::Serde(e) => write!(f, "serde error: {}", e),
-            Error::RemoteError(e) => write!(f, "remote error: {:?}", e),
+            Error::Reqwest(e) => write!(f, "reqwest error: {e}"),
+            Error::Url(e) => write!(f, "url error: {e}"),
+            Error::Serde(e) => write!(f, "serde error: {e}"),
+            Error::RemoteError(e) => write!(f, "remote error: {e:?}"),
         }
     }
 }
@@ -914,7 +914,7 @@ impl Valhalla {
 
     /// Make a routing request
     ///
-    /// See https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference for details
+    /// See <https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference> for details
     pub fn route(&self, manifest: Manifest) -> Result<Trip, Error> {
         debug!(
             "Sending routing request: {}",
@@ -939,34 +939,10 @@ impl Valhalla {
         let response: Response = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response.trip)
     }
+
     /// Make a routing request
     ///
-    /// See https://valhalla.github.io/valhalla/api/optimized/api-reference/ for details
-    pub fn optimized_route(&self, manifest: Manifest) -> Result<Trip, Error> {
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("optimized_route");
-        let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
-        // let route: Trip = response.json().map_err(Error::Reqwest)?;
-        debug!("{text}");
-        let response: Response = serde_json::from_str(&text).map_err(Error::Serde)?;
-        Ok(response.trip)
-    }
+    /// See <https://valhalla.github.io/valhalla/api/matrix/api-reference>/ for details
     pub fn matrix_route(&self, manifest: MatrixManifest) -> Result<MatrixTrip, Error> {
         debug!(
             "Sending routing request: {}",
@@ -1005,7 +981,7 @@ impl From<Trip> for gpx::Gpx {
         };
         let track = gpx::Track {
             name: Some("route".to_string()),
-            segments: trip.legs.iter().map(|leg| leg.into()).collect(),
+            segments: trip.legs.iter().map(Into::into).collect(),
             ..Default::default()
         };
         gpx.tracks.push(track);
