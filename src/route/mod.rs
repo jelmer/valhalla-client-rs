@@ -623,3 +623,29 @@ pub struct Location {
     /// disabled for any edges.
     pub street_side_cutoff: Option<f64>,
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation_snapshots() {
+        let manifest = Manifest::default();
+        insta::assert_json_snapshot!(manifest, @r#"
+        {
+          "costing": "auto",
+          "costing_options": {},
+          "locations": [],
+          "units": "kilometers",
+          "id": "",
+          "language": "",
+          "directions_type": "instructions",
+          "alternates": 0,
+          "exclude_locations": [],
+          "exclude_polygons": [],
+          "linear_references": false,
+          "prioritize_bidirectional": false,
+          "roundabout_exits": false
+        }
+        "#)
+    }
+}

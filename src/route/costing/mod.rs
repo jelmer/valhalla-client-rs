@@ -12,7 +12,7 @@ pub mod truck;
 
 use serde::Serialize;
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Debug)]
 #[serde(tag = "costing", content = "costing_options")]
 #[allow(clippy::large_enum_variant)]
 pub enum Costing {

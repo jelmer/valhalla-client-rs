@@ -20,3 +20,11 @@ url = "2.5.2"
 [features]
 default = ["gpx"]
 gpx = ["dep:gpx"]
+
+[dev-dependencies]
+insta = { version = "1.41.1", features = ["json"] }
+
+# because of https://insta.rs/docs/quickstart/
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3
