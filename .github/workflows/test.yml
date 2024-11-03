@@ -75,7 +75,7 @@ jobs:
       - name: Install openssl development headers
         run: |
           sudo apt-get update
-          sudo apt-get install install libssl-dev
+          sudo apt-get install libssl-dev
       - name: Install stable
         uses: dtolnay/rust-toolchain@stable
       - name: Install nightly for -Zminimal-versions
