@@ -112,7 +112,7 @@ jobs:
     # https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
     strategy:
       matrix:
-        msrv: ["1.61.0"] # because of dependency "syn"
+        msrv: ["1.63.0"] # because of dependency "reqwest"
     name: ubuntu / ${{ matrix.msrv }}
     steps:
       - uses: actions/checkout@v4
