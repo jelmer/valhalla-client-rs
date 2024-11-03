@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
-mod route;
-mod shapes;
+pub mod route;
+pub mod shapes;
 
 use log::debug;
 use serde::{Deserialize, Serialize};
