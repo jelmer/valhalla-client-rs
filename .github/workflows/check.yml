@@ -112,7 +112,7 @@ jobs:
     # https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
     strategy:
       matrix:
-        msrv: ["1.60.0"] # namespaced features in Cargo.toml
+        msrv: ["1.61.0"] # because of dependency "syn"
     name: ubuntu / ${{ matrix.msrv }}
     steps:
       - uses: actions/checkout@v4
