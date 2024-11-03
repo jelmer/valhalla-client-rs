@@ -630,20 +630,23 @@ mod test {
     #[test]
     fn serialisation_snapshots() {
         let manifest = Manifest::default();
-        assert_eq!(serde_json::to_value(manifest).unwrap(), serde_json::json!({
-          "costing": "auto",
-          "costing_options": {},
-          "locations": [],
-          "units": "kilometers",
-          "id": "",
-          "language": "",
-          "directions_type": "instructions",
-          "alternates": 0,
-          "exclude_locations": [],
-          "exclude_polygons": [],
-          "linear_references": false,
-          "prioritize_bidirectional": false,
-          "roundabout_exits": false
-        }))
+        assert_eq!(
+            serde_json::to_value(manifest).unwrap(),
+            serde_json::json!({
+              "costing": "auto",
+              "costing_options": {},
+              "locations": [],
+              "units": "kilometers",
+              "id": "",
+              "language": "",
+              "directions_type": "instructions",
+              "alternates": 0,
+              "exclude_locations": [],
+              "exclude_polygons": [],
+              "linear_references": false,
+              "prioritize_bidirectional": false,
+              "roundabout_exits": false
+            })
+        )
     }
 }
