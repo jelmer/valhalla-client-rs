@@ -1,5 +1,5 @@
-use super::*;
-
+use serde::{Deserialize, Serialize};
+pub mod costing;
 #[derive(Deserialize, Debug, Clone)]
 pub struct Response {
     pub trip: Trip,
@@ -310,7 +310,7 @@ pub struct TransitInfo {
     /// Operator/agency name. For example, "BART", "King County Marine Division", and so on. Short
     /// name is used over long name.
     pub operator_name: String,
-    /// Operator/agency URL. For example, "http://web.mta.info/".
+    /// Operator/agency URL. For example, `http://web.mta.info/`.
     pub operator_url: String,
     /// A list of the stops/stations associated with a specific transit route. See below for
     /// details.
@@ -376,182 +376,10 @@ pub enum Units {
     Imperial,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy)]
-pub enum BicycleType {
-    /// Road: a road-style bicycle with narrow tires that is generally lightweight and designed for speed on paved surfaces.
-    #[serde(rename = "road")]
-    Road,
-    /// Hybrid or City: a bicycle made mostly for city riding or casual riding on roads and paths with good surfaces.
-    #[default]
-    #[serde(rename = "hybrid")]
-    Hybrid,
-    /// Cross: a cyclo-cross bicycle, which is similar to a road bicycle but with wider tires suitable to rougher surfaces.
-    #[serde(rename = "cross")]
-    Cross,
-    /// Mountain: a mountain bicycle suitable for most surfaces but generally heavier and slower on paved surfaces.
-    #[serde(rename = "mountain")]
-    Mountain,
-}
-
-#[derive(Serialize, Default, Clone, Copy)]
-pub enum Costing {
-    /// Standard costing for driving routes by car, motorcycle, truck, and so on that obeys automobile
-    /// driving rules, such as access and turn restrictions. Auto provides a short time path (though
-    /// not guaranteed to be shortest time) and uses intersection costing to minimize turns and
-    /// maneuvers or road name changes. Routes also tend to favor highways and higher classification
-    /// roads, such as motorways and trunks.
-    #[default]
-    #[serde(rename = "auto")]
-    Auto,
-
-    /// Standard costing for travel by bicycle, with a slight preference for using cycleways or roads
-    /// with bicycle lanes. Bicycle routes follow regular roads when needed, but avoid roads without
-    /// bicycle access.
-    #[serde(rename = "bicycle")]
-    Bicycle,
-
-    /// Standard costing for bus routes. Bus costing inherits the auto costing behaviors, but checks
-    /// for bus access on the roads.
-    #[serde(rename = "bus")]
-    Bus,
-    /// A combination of pedestrian and bicycle. Use bike share station(amenity:bicycle_rental) to
-    /// change the travel mode
-    #[serde(rename = "bikeshare")]
-    Bikeshare,
-    /// Standard costing for trucks. Truck costing inherits the auto costing behaviors, but checks for
-    /// truck access, width and height restrictions, and weight limits on the roads.
-    #[serde(rename = "truck")]
-    Truck,
-    /// DEPRECATED: use auto cost with HOV costing options.
-    #[serde(rename = "hov")]
-    Hov,
-    /// Standard costing for taxi routes. Taxi costing inherits the auto costing behaviors, but checks
-    /// for taxi lane access on the roads and favors those roads.
-    #[serde(rename = "taxi")]
-    Taxi,
-    /// Standard costing for travel by motor scooter or moped. By default, motor_scooter costing will
-    /// avoid higher class roads unless the country overrides allows motor scooters on these roads.
-    /// Motor scooter routes follow regular roads when needed, but avoid roads without motor_scooter,
-    /// moped, or mofa access.
-    #[serde(rename = "motor_scooter")]
-    MotorScooter,
-    /// Standard costing for travel by motorcycle. This costing model provides options to tune the
-    /// route to take roadways (road touring) vs. tracks and trails (adventure motorcycling).
-    #[serde(rename = "motorcycle")]
-    Motorcycle,
-    /// Currently supports pedestrian and transit. In the future, multimodal will support a
-    /// combination of all of the above.
-    #[serde(rename = "multimodal")]
-    Multimodal,
-    /// Standard walking route that excludes roads without pedestrian access. In general, pedestrian
-    /// routes are shortest distance with the following exceptions: walkways and footpaths are slightly
-    /// favored, while steps or stairs and alleys are slightly avoided.
-    #[serde(rename = "pedestrian")]
-    Pedestrian,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct BicycleCostingOptions {
-    pub bicycle_type: BicycleType,
-
-    /// Cycling speed is the average travel speed along smooth, flat roads. This is meant to be
-    /// the speed a rider can comfortably maintain over the desired distance of the route. It
-    /// can be modified (in the costing method) by surface type in conjunction with bicycle
-    /// type and (coming soon) by hilliness of the road section. When no speed is specifically
-    /// provided, the default speed is determined by the bicycle type and are as follows: Road
-    /// = 25 KPH (15.5 MPH), Cross = 20 KPH (13 MPH), Hybrid/City = 18 KPH (11.5 MPH), and
-    /// Mountain = 16 KPH (10 MPH).
-    pub cycling_speed: Option<f64>,
-
-    /// A cyclist's propensity to use roads alongside other vehicles. This is a range of values
-    /// from 0 to 1, where 0 attempts to avoid roads and stay on cycleways and paths, and 1
-    /// indicates the rider is more comfortable riding on roads. Based on the use_roads factor,
-    /// roads with certain classifications and higher speeds are penalized in an attempt to
-    /// avoid them when finding the best path. The default value is 0.5.
-    pub use_roads: Option<f64>,
-
-    /// A cyclist's desire to tackle hills in their routes. This is a range of values from 0 to
-    /// 1, where 0 attempts to avoid hills and steep grades even if it means a longer (time and
-    /// distance) path, while 1 indicates the rider does not fear hills and steeper grades.
-    /// Based on the use_hills factor, penalties are applied to roads based on elevation change
-    /// and grade. These penalties help the path avoid hilly roads in favor of flatter roads or
-    /// less steep grades where available. Note that it is not always possible to find
-    /// alternate paths to avoid hills (for example when route locations are in mountainous
-    /// areas). The default value is 0.5.
-    pub use_hills: Option<f64>,
-
-    /// This value indicates the willingness to take ferries. This is a range of values between
-    /// 0 and 1. Values near 0 attempt to avoid ferries and values near 1 will favor ferries.
-    /// Note that sometimes ferries are required to complete a route so values of 0 are not
-    /// guaranteed to avoid ferries entirely. The default value is 0.5.
-    pub use_ferry: Option<f64>,
-
-    /// This value indicates the willingness to take living streets. This is a range of values
-    /// between 0 and 1. Values near 0 attempt to avoid living streets and values from 0.5 to 1
-    /// will currently have no effect on route selection. The default value is 0.5. Note that
-    /// sometimes living streets are required to complete a route so values of 0 are not
-    /// guaranteed to avoid living streets entirely.
-    pub use_living_streets: Option<f64>,
-
-    /// This value is meant to represent how much a cyclist wants to avoid roads with poor
-    /// surfaces relative to the bicycle type being used. This is a range of values between 0
-    /// and 1. When the value is 0, there is no penalization of roads with different surface
-    /// types; only bicycle speed on each surface is taken into account. As the value
-    /// approaches 1, roads with poor surfaces for the bike are penalized heavier so that they
-    /// are only taken if they significantly improve travel time. When the value is equal to 1,
-    /// all bad surfaces are completely disallowed from routing, including start and end
-    /// points. The default value is 0.25.
-    pub avoid_bad_surfaces: Option<f64>,
-
-    /// This value is useful when bikeshare is chosen as travel mode. It is meant to give the
-    /// time will be used to return a rental bike. This value will be displayed in the final
-    /// directions and used to calculate the whole duation. The default value is 120 seconds.
-    pub bss_return_cost: Option<f64>,
-
-    /// This value is useful when bikeshare is chosen as travel mode. It is meant to describe
-    /// the potential effort to return a rental bike. This value won't be displayed and used
-    /// only inside of the algorithm.
-    pub bss_return_penalty: Option<f64>,
-
-    /// Changes the metric to quasi-shortest, i.e. purely distance-based costing. Note, this
-    /// will disable all other costings & penalties. Also note, shortest will not disable
-    /// hierarchy pruning, leading to potentially sub-optimal routes for some costing models.
-    /// The default is false.
-    pub shortest: Option<bool>,
-
-    /// A penalty applied when transitioning between roads that do not have consistent
-    /// naming–in other words, no road names in common. This penalty can be used to create
-    /// simpler routes that tend to have fewer maneuvers or narrative guidance instructions.
-    /// The default maneuver penalty is five seconds.
-    pub maneuver_penalty: Option<f64>,
-
-    /// A cost applied when a gate with undefined or private access is encountered. This cost
-    /// is added to the estimated time / elapsed time. The default gate cost is 30 seconds.
-    pub gate_cost: Option<f64>,
-
-    /// A penalty applied when a gate with no access information is on the road. The default
-    /// gate penalty is 300 seconds.
-    pub gate_penalty: Option<f64>,
-
-    /// A cost applied when encountering an international border. This cost is added to the
-    /// estimated and elapsed times. The default cost is 600 seconds.
-    pub country_crossing_cost: Option<f64>,
-
-    /// A penalty applied for a country crossing. This penalty can be used to create paths that
-    /// avoid spanning country boundaries. The default penalty is 0.
-    pub country_crossing_penalty: Option<f64>,
-
-    /// A penalty applied for transition to generic service road. The default penalty is 0
-    /// trucks and 15 for cars, buses, motor scooters and motorcycles.
-    pub service_penalty: Option<f64>,
-}
-
-#[derive(Serialize, Default)]
+#[derive(Serialize, Default, Debug)]
 pub struct Manifest {
-    pub costing: Costing,
-
-    #[serde(rename = "costing_options")]
-    pub bicycle_costing_options: Option<BicycleCostingOptions>,
+    #[serde(flatten)]
+    pub costing: costing::Costing,
 
     pub locations: Vec<Location>,
 
@@ -582,8 +410,10 @@ pub struct Manifest {
     /// computation.
     pub exclude_locations: Vec<Location>,
 
-    /// One or multiple exterior rings of polygons in the form of nested JSON arrays, e.g. [[[lon1,
-    /// lat1], [lon2,lat2]],[[lon1,lat1],[lon2,lat2]]]. Roads intersecting these rings will be
+    /// One or multiple exterior rings of polygons in the form of nested JSON arrays.
+    ///
+    /// Example: `[[[lon1, lat1], [lon2,lat2]],[[lon1,lat1],[lon2,lat2]]]`
+    /// Roads intersecting these rings will be
     /// avoided during path finding. If you only need to avoid a few specific roads, it's much more
     /// efficient to use exclude_locations. Valhalla will close open rings (i.e. copy the first
     /// coordinate to the last position).
@@ -596,13 +426,28 @@ pub struct Manifest {
 
     /// Prioritize bidirectional a* when date_time.type = depart_at/current. By default
     /// time_dependent_forward a* is used in these cases, but bidirectional a* is much faster.
-    /// Currently it does not update the time (and speeds) when searching for the route path, but
+    /// Currently, it does not update the time (and speeds) when searching for the route path, but
     /// the ETA on that route is recalculated based on the time-dependent speeds
     pub prioritize_bidirectional: bool,
 
     /// A boolean indicating whether exit instructions at roundabouts should be added to the output
     /// or not. Default is true.
     pub roundabout_exits: bool,
+}
+
+impl Manifest {
+    pub fn builder() -> Self {
+        Self::default()
+    }
+    /// Configures the costing model
+    ///
+    /// Valhalla's routing service uses dynamic, run-time costing to generate the route path.
+    /// Can be configured with different settings depending on the costing model used.
+    /// Default: [`costing::Costing::Auto`]
+    pub fn costing(mut self, costing: costing::Costing) -> Self {
+        self.costing = costing;
+        self
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Copy, Debug)]
@@ -777,4 +622,31 @@ pub struct Location {
     /// service_other. The default value is service_other so that preferred_side will not be
     /// disabled for any edges.
     pub street_side_cutoff: Option<f64>,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation_snapshots() {
+        let manifest = Manifest::default();
+        assert_eq!(
+            serde_json::to_value(manifest).unwrap(),
+            serde_json::json!({
+              "costing": "auto",
+              "costing_options": {},
+              "locations": [],
+              "units": "kilometers",
+              "id": "",
+              "language": "",
+              "directions_type": "instructions",
+              "alternates": 0,
+              "exclude_locations": [],
+              "exclude_polygons": [],
+              "linear_references": false,
+              "prioritize_bidirectional": false,
+              "roundabout_exits": false
+            })
+        )
+    }
 }
