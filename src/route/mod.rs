@@ -630,8 +630,7 @@ mod test {
     #[test]
     fn serialisation_snapshots() {
         let manifest = Manifest::default();
-        insta::assert_json_snapshot!(manifest, @r#"
-        {
+        assert_eq!(serde_json::to_value(manifest).unwrap(), serde_json::json!({
           "costing": "auto",
           "costing_options": {},
           "locations": [],
@@ -645,7 +644,6 @@ mod test {
           "linear_references": false,
           "prioritize_bidirectional": false,
           "roundabout_exits": false
-        }
-        "#)
+        }))
     }
 }
