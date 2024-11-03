@@ -117,8 +117,8 @@ impl AutoCostingOptions {
     ///
     /// Default: `0.5`
     pub fn use_ferry(mut self, use_ferry: f32) -> Self {
-        debug_assert!(use_ferry>=0.0);
-        debug_assert!(use_ferry<=1.0);
+        debug_assert!(use_ferry >= 0.0);
+        debug_assert!(use_ferry <= 1.0);
         self.use_ferry = Some(use_ferry);
         self
     }
@@ -132,8 +132,8 @@ impl AutoCostingOptions {
     ///
     /// Default: `1.0`
     pub fn use_highways(mut self, use_highways: f32) -> Self {
-        debug_assert!(use_highways>=0.0);
-        debug_assert!(use_highways<=1.0);
+        debug_assert!(use_highways >= 0.0);
+        debug_assert!(use_highways <= 1.0);
         self.use_highways = Some(use_highways);
         self
     }
@@ -144,11 +144,11 @@ impl AutoCostingOptions {
     /// - values near `1` will not attempt to avoid them.
     ///
     /// **Note:** sometimes roads with tolls are required to complete a route so values of `0` are not guaranteed to avoid them entirely.
-    /// 
+    ///
     /// Default: `0.5`
     pub fn use_tolls(mut self, use_tolls: f32) -> Self {
-        debug_assert!(use_tolls>=0.0);
-        debug_assert!(use_tolls<=1.0);
+        debug_assert!(use_tolls >= 0.0);
+        debug_assert!(use_tolls <= 1.0);
         self.use_tolls = Some(use_tolls);
         self
     }
@@ -164,8 +164,8 @@ impl AutoCostingOptions {
     /// - `truck`: `0`
     /// - `cars`/`buses`/`motor scooters`/`motorcycles`: `0.1`
     pub fn use_living_streets(mut self, use_living_streets: f32) -> Self {
-        debug_assert!(use_living_streets>=0.0);
-        debug_assert!(use_living_streets<=1.0);
+        debug_assert!(use_living_streets >= 0.0);
+        debug_assert!(use_living_streets <= 1.0);
         self.use_living_streets = Some(use_living_streets);
         self
     }
@@ -176,13 +176,13 @@ impl AutoCostingOptions {
     /// - values near `1` will favor tracks a little bit.
     ///
     /// **Note:** sometimes tracks are required to complete a route so values of `0` are not guaranteed to avoid tracks entirely.
-    /// 
+    ///
     /// Default:
     /// - `0` for autos,
     /// - `0.5` for motor scooters and motorcycles.
     pub fn use_tracks(mut self, use_tracks: f32) -> Self {
-        debug_assert!(use_tracks>=0.0);
-        debug_assert!(use_tracks<=1.0);
+        debug_assert!(use_tracks >= 0.0);
+        debug_assert!(use_tracks <= 1.0);
         self.use_tracks = Some(use_tracks);
         self
     }
@@ -241,8 +241,8 @@ impl AutoCostingOptions {
     ///
     /// **Note:** this costing is currently only available for [`super::Costing::Auto`].
     pub fn use_distance(mut self, use_distance: f32) -> Self {
-        debug_assert!(use_distance>=0.0);
-        debug_assert!(use_distance<=1.0);
+        debug_assert!(use_distance >= 0.0);
+        debug_assert!(use_distance <= 1.0);
         self.use_distance = Some(use_distance);
         self
     }
