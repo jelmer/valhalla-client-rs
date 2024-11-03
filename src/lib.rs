@@ -5,7 +5,7 @@ pub mod route;
 pub mod shapes;
 
 use log::debug;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
 
