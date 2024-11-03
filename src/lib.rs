@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 //! This crate contains the types and functions for interacting with the Valhalla API.
 //!
 //! At the moment, only the routing API is implemented.
