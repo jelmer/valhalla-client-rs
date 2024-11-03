@@ -7,12 +7,14 @@ At the moment, only the routing API is implemented.
 ## Examples
 
 ```rust
-use valhalla_client::{Valhalla, Location, Manifest};;
+use valhalla_client::Valhalla;
+use valhalla_client::route::{Location, Manifest, Costing};
+
 let valhalla = Valhalla::default();
 
 let manifest = Manifest {
     locations: vec![Location::new(4.9041, 52.3676), Location::new(5.1214, 52.0907)],
-    costing: valhalla_client::Costing::Bicycle,
+    costing: Costing::Bicycle,
     ..Default::default()
 };
 
