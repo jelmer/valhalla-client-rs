@@ -76,6 +76,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libssl-dev
+          echo "OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu" >> "$GITHUB_ENV"
+          echo "OPENSSL_INCLUDE_DIR=/usr/include/openssl" >> "$GITHUB_ENV"
       - name: Install stable
         uses: dtolnay/rust-toolchain@stable
       - name: Install nightly for -Zminimal-versions
