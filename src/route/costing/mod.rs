@@ -1,6 +1,5 @@
 pub mod auto;
 pub mod bicycle;
-pub mod bikeshare;
 pub mod motor;
 pub mod motorcycle;
 pub mod multimodal;
@@ -39,7 +38,7 @@ pub enum Costing {
     ///
     /// Use bike share station (indicated by [`amenity:bicycle_rental`](https://wiki.openstreetmap.org/wiki/Tag:amenity%3Dbicycle_rental)) to change the travel mode
     #[serde(rename = "bikeshare")]
-    Bikeshare(bikeshare::BikeshareCostingOptions),
+    Bikeshare(bicycle::BicycleCostingOptions),
     /// Standard costing for trucks.
     ///
     /// Truck costing inherits the [`Costing::Auto`] behaviors, but checks for:
