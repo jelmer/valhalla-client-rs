@@ -1,13 +1,11 @@
 pub mod auto;
 pub mod bicycle;
 pub mod bikeshare;
-pub mod bus;
 pub mod hov;
 pub mod motor;
 pub mod motorcycle;
 pub mod multimodal;
 pub mod pedestrian;
-pub mod taxi;
 pub mod truck;
 
 use serde::Serialize;
@@ -37,7 +35,7 @@ pub enum Costing {
     ///
     /// Bus costing inherits the [`Costing::Auto`] behaviors, but checks for bus access on the roads.
     #[serde(rename = "bus")]
-    Bus(bus::BusCostingOptions),
+    Bus(auto::AutoCostingOptions),
     /// A combination of pedestrian and bicycle.
     ///
     /// Use bike share station (indicated by [`amenity:bicycle_rental`](https://wiki.openstreetmap.org/wiki/Tag:amenity%3Dbicycle_rental)) to change the travel mode
@@ -61,7 +59,7 @@ pub enum Costing {
     /// Taxi costing inherits the [`Costing::Auto`] behaviors, but checks and favors
     /// taxi lane access on roads.
     #[serde(rename = "taxi")]
-    Taxi(taxi::TaxiCostingOptions),
+    Taxi(auto::AutoCostingOptions),
     /// Standard costing for travel by motor scooter or moped.
     ///
     /// By default, this will avoid higher class roads unless the country overrides allows motor
