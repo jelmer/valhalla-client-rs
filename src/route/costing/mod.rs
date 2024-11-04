@@ -1,7 +1,6 @@
 pub mod auto;
 pub mod bicycle;
 pub mod bikeshare;
-pub mod hov;
 pub mod motor;
 pub mod motorcycle;
 pub mod multimodal;
