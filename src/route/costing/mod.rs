@@ -49,11 +49,6 @@ pub enum Costing {
     /// - weight limits
     #[serde(rename = "truck")]
     Truck(truck::TruckCostingOptions),
-    /// DEPRECATED: use [`Costing::Auto`] with HOV costing options.
-    #[serde(rename = "hov")]
-    // #[deprecated] <- this would cause a compilation warning due to https://github.com/rust-lang/rust/issues/92313
-    #[doc(hidden)]
-    Hov(hov::HovCostingOptions),
     /// Standard costing for taxi routes.
     ///
     /// Taxi costing inherits the [`Costing::Auto`] behaviors, but checks and favors
