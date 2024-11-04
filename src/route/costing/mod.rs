@@ -6,6 +6,7 @@ pub mod motor;
 pub mod motorcycle;
 pub mod multimodal;
 pub mod pedestrian;
+pub mod transit;
 pub mod truck;
 
 use serde::Serialize;
