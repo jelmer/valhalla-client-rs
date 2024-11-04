@@ -27,21 +27,21 @@ pub enum BicycleType {
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BicycleCostingOptions {
     bicycle_type: BicycleType,
-    cycling_speed: Option<f64>,
-    use_roads: Option<f64>,
-    use_hills: Option<f64>,
-    use_ferry: Option<f64>,
-    use_living_streets: Option<f64>,
-    avoid_bad_surfaces: Option<f64>,
-    bss_return_cost: Option<f64>,
-    bss_return_penalty: Option<f64>,
+    cycling_speed: Option<f32>,
+    use_roads: Option<f32>,
+    use_hills: Option<f32>,
+    use_ferry: Option<f32>,
+    use_living_streets: Option<f32>,
+    avoid_bad_surfaces: Option<f32>,
+    bss_return_cost: Option<f32>,
+    bss_return_penalty: Option<f32>,
     shortest: Option<bool>,
-    maneuver_penalty: Option<f64>,
-    gate_cost: Option<f64>,
-    gate_penalty: Option<f64>,
-    country_crossing_cost: Option<f64>,
-    country_crossing_penalty: Option<f64>,
-    service_penalty: Option<f64>,
+    maneuver_penalty: Option<f32>,
+    gate_cost: Option<f32>,
+    gate_penalty: Option<f32>,
+    country_crossing_cost: Option<f32>,
+    country_crossing_penalty: Option<f32>,
+    service_penalty: Option<f32>,
 }
 impl BicycleCostingOptions {
     pub fn builder() -> Self {
@@ -70,7 +70,7 @@ impl BicycleCostingOptions {
     /// - [`BicycleType::Cross`] = 20 KPH (13 MPH),
     /// - [`BicycleType::Hybrid`] = 18 KPH (11.5 MPH), and
     /// - [`BicycleType::Mountain`] = 16 KPH (10 MPH).
-    pub fn cycling_speed(mut self, speed: f64) -> Self {
+    pub fn cycling_speed(mut self, speed: f32) -> Self {
         self.cycling_speed = Some(speed);
         self
     }
@@ -85,7 +85,7 @@ impl BicycleCostingOptions {
     /// in an attempt to avoid them when finding the best path.
     ///
     /// Default: `0.5`
-    pub fn use_roads(mut self, willingness: f64) -> Self {
+    pub fn use_roads(mut self, willingness: f32) -> Self {
         self.use_roads = Some(willingness);
         self
     }
@@ -103,7 +103,7 @@ impl BicycleCostingOptions {
     /// areas).
     ///
     /// Default: `0.5`
-    pub fn use_hills(mut self, willingness: f64) -> Self {
+    pub fn use_hills(mut self, willingness: f32) -> Self {
         self.use_hills = Some(willingness);
         self
     }
@@ -118,7 +118,7 @@ impl BicycleCostingOptions {
     /// guaranteed to avoid ferries entirely.
     ///
     /// Default: `0.5`
-    pub fn use_ferry(mut self, willingness: f64) -> Self {
+    pub fn use_ferry(mut self, willingness: f32) -> Self {
         self.use_ferry = Some(willingness);
         self
     }
@@ -133,7 +133,7 @@ impl BicycleCostingOptions {
     /// guaranteed to avoid living streets entirely.
     ///
     /// Default: `0.5`
-    pub fn use_living_streets(mut self, willingness: f64) -> Self {
+    pub fn use_living_streets(mut self, willingness: f32) -> Self {
         self.use_living_streets = Some(willingness);
         self
     }
@@ -149,7 +149,7 @@ impl BicycleCostingOptions {
     ///   including start and end points.
     ///
     /// Default: `0.25`
-    pub fn avoid_bad_surfaces(mut self, willingness: f64) -> Self {
+    pub fn avoid_bad_surfaces(mut self, willingness: f32) -> Self {
         self.avoid_bad_surfaces = Some(willingness);
         self
     }
@@ -160,7 +160,7 @@ impl BicycleCostingOptions {
     /// This value will be displayed in the final directions and used to calculate the whole duration.
     ///
     /// Default: `120` seconds
-    pub fn bss_return_cost(mut self, cost: f64) -> Self {
+    pub fn bss_return_cost(mut self, cost: f32) -> Self {
         self.bss_return_cost = Some(cost);
         self
     }
@@ -169,7 +169,7 @@ impl BicycleCostingOptions {
     ///
     /// It is meant to describe the potential effort to return a rental bike.
     /// This value won't be displayed and used only inside the algorithm.
-    pub fn bss_return_penalty(mut self, penalty: f64) -> Self {
+    pub fn bss_return_penalty(mut self, penalty: f32) -> Self {
         self.bss_return_penalty = Some(penalty);
         self
     }
@@ -193,7 +193,7 @@ impl BicycleCostingOptions {
     /// narrative guidance instructions.
     ///
     /// Default: `5` seconds
-    pub fn maneuver_penalty(mut self, penalty: f64) -> Self {
+    pub fn maneuver_penalty(mut self, penalty: f32) -> Self {
         self.maneuver_penalty = Some(penalty);
         self
     }
@@ -203,7 +203,7 @@ impl BicycleCostingOptions {
     /// This cost is added to the estimated time / elapsed time.
     ///
     /// Default: `30` seconds
-    pub fn gate_cost(mut self, cost: f64) -> Self {
+    pub fn gate_cost(mut self, cost: f32) -> Self {
         self.gate_cost = Some(cost);
         self
     }
@@ -211,7 +211,7 @@ impl BicycleCostingOptions {
     /// A penalty applied when a gate with no access information is on the road.
     ///
     /// Default: `300` seconds
-    pub fn gate_penalty(mut self, penalty: f64) -> Self {
+    pub fn gate_penalty(mut self, penalty: f32) -> Self {
         self.gate_penalty = Some(penalty);
         self
     }
@@ -221,7 +221,7 @@ impl BicycleCostingOptions {
     /// This cost is added to the estimated and elapsed times.
     ///
     /// Default: `600` seconds
-    pub fn country_crossing_cost(mut self, cost: f64) -> Self {
+    pub fn country_crossing_cost(mut self, cost: f32) -> Self {
         self.country_crossing_cost = Some(cost);
         self
     }
@@ -231,7 +231,7 @@ impl BicycleCostingOptions {
     /// This penalty can be used to create paths that avoid spanning country boundaries.
     ///
     /// Default: `0`
-    pub fn country_crossing_penalty(mut self, penalty: f64) -> Self {
+    pub fn country_crossing_penalty(mut self, penalty: f32) -> Self {
         self.country_crossing_penalty = Some(penalty);
         self
     }
@@ -239,7 +239,7 @@ impl BicycleCostingOptions {
     /// A penalty applied for transition to generic service road.
     ///
     /// Default: `0` for trucks and `15` for cars, buses, motor scooters and motorcycles.
-    pub fn service_penalty(mut self, penalty: f64) -> Self {
+    pub fn service_penalty(mut self, penalty: f32) -> Self {
         self.service_penalty = Some(penalty);
         self
     }
