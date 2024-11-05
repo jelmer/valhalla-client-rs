@@ -43,7 +43,7 @@ pub struct MotorcycleCostingOptions {
     include_hov3: Option<bool>,
     include_hot: Option<bool>,
     // -- ↓ motorcycle only ↓ --
-    use_trails:Option<f32>,
+    use_trails: Option<f32>,
 }
 impl MotorcycleCostingOptions {
     pub fn builder() -> Self {
