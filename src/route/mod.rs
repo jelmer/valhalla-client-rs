@@ -644,7 +644,7 @@ impl From<&Location> for gpx::Waypoint {
     }
 }
 /// A longitude, latitude coordinate in degrees
-/// 
+///
 /// See <https://en.wikipedia.org/wiki/Geographic_coordinate_system> for further context
 pub type Coordinate = (f32, f32);
 impl From<Coordinate> for Location {
