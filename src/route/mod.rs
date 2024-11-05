@@ -387,7 +387,7 @@ pub struct Manifest {
     directions_type: DirectionsType,
     alternates: i32,
     exclude_locations: Vec<Location>,
-    exclude_polygons: Vec<Vec<(f32, f32)>>,
+    exclude_polygons: Vec<Vec<Coordinate>>,
     linear_references: Option<bool>,
     prioritize_bidirectional: Option<bool>,
     roundabout_exits: Option<bool>,
@@ -530,7 +530,7 @@ impl Manifest {
     /// ```
     pub fn exclude_polygons(
         mut self,
-        exclude_polygons: impl IntoIterator<Item = impl IntoIterator<Item = (f32, f32)>>,
+        exclude_polygons: impl IntoIterator<Item = impl IntoIterator<Item = Coordinate>>,
     ) -> Self {
         self.exclude_polygons = exclude_polygons
             .into_iter()
@@ -569,7 +569,7 @@ impl Manifest {
     /// ```
     pub fn exclude_polygon(
         mut self,
-        exclude_polygon: impl IntoIterator<Item = (f32, f32)>,
+        exclude_polygon: impl IntoIterator<Item = Coordinate>,
     ) -> Self {
         self.exclude_polygons
             .push(exclude_polygon.into_iter().collect());
@@ -637,15 +637,18 @@ pub enum Side {
 #[cfg(feature = "gpx")]
 impl From<&Location> for gpx::Waypoint {
     fn from(location: &Location) -> Self {
-        let mut p =
-            gpx::Waypoint::new(geo_types::Point::new(location.longitude, location.latitude));
-        p.name = location.name.clone();
+        let point = geo_types::Point::new(location.longitude as f64, location.latitude as f64);
+        let mut p = gpx::Waypoint::new(point);
+        p.name.clone_from(&location.name);
         p
     }
 }
-
-impl Location {
-    pub fn new(longitude: f64, latitude: f64) -> Self {
+/// A longitude, latitude coordinate in degrees
+/// 
+/// See <https://en.wikipedia.org/wiki/Geographic_coordinate_system> for further context
+pub type Coordinate = (f32, f32);
+impl From<Coordinate> for Location {
+    fn from((latitude, longitude): Coordinate) -> Self {
         Self {
             latitude,
             longitude,
@@ -654,129 +657,246 @@ impl Location {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Clone, Debug)]
-pub struct Location {
-    /// Latitude of the location in degrees. This is assumed to be both the routing location and
-    /// the display location if no display_lat and display_lon are provided.
-    #[serde(rename = "lat")]
-    pub latitude: f64,
+impl Location {
+    /// Create a Location from latitude/longitude of the location in degrees.
+    ///
+    /// This is assumed to be both routing location and display location is equal.
+    /// See [`Self::display_coordinates`] to change the display location
+    pub fn new(longitude: f32, latitude: f32) -> Self {
+        Self {
+            latitude,
+            longitude,
+            ..Default::default()
+        }
+    }
+    /// Display Coordinate location in degrees.
+    ///
+    /// Will be used to determine the side of street.
+    /// Must be valid to achieve the desired effect.
+    pub fn display_coordinates(mut self, display_lat: f32, display_lon: f32) -> Self {
+        self.display_lat = Some(display_lat);
+        self.display_lon = Some(display_lon);
+        self
+    }
 
-    /// Longitude of the location in degrees. This is assumed to be both the routing location and
-    /// the display location if no display_lat and display_lon are provided.
-    #[serde(rename = "lon")]
-    pub longitude: f64,
+    /// Sets the Street name.
+    ///
+    /// May be used to assist finding the correct routing location at the specified coordinate.
+    /// **This is not currently implemented.**
+    pub fn street_name(mut self, street: impl ToString) -> Self {
+        self.street = Some(street.to_string());
+        self
+    }
 
-    /// (optional) Street name. The street name may be used to assist finding the correct routing
-    /// location at the specified latitude, longitude. This is not currently implemented.
-    pub street: Option<String>,
+    /// Sets the OpenStreetMap identification number for a polyline way.
+    ///
+    /// The way ID may be used to assist finding the correct routing location at the specified coordinate.
+    /// **This is not currently implemented.**
+    pub fn way_id(mut self, way_id: i64) -> Self {
+        self.way_id = Some(way_id);
+        self
+    }
 
-    /// (optional) OpenStreetMap identification number for a polyline way. The way ID may be used
-    /// to assist finding the correct routing location at the specified latitude, longitude. This
-    /// is not currently implemented.
-    pub way_id: Option<i64>,
-
-    /// Minimum number of nodes (intersections) reachable for a given edge (road between
-    /// intersections) to consider that edge as belonging to a connected region. When correlating
-    /// this location to the route network, try to find candidates who are reachable from this many
-    /// or more nodes (intersections). If a given candidate edge reaches less than this number of
-    /// nodes its considered to be a disconnected island and we'll search for more candidates until
-    /// we find at least one that isn't considered a disconnected island. If this value is larger
-    /// than the configured service limit it will be clamped to that limit. The default is a
-    /// minimum of 50 reachable nodes.
-    pub minimum_reachability: Option<i32>,
+    /// Sets the Minimum number of nodes (intersections) reachable for a given edge (road between
+    /// intersections) to consider that edge as belonging to a connected region.
+    ///
+    /// When correlating this location to the route network, try to find candidates who are reachable
+    /// from this many or more nodes (intersections). If a given candidate edge reaches less than
+    /// this number of nodes it is considered to be a disconnected island, and we will search for more
+    /// candidates until we find at least one that isn't considered a disconnected island.
+    /// If this value is larger than the configured service limit it will be clamped to that limit.
+    ///
+    /// Default: `50` reachable nodes.
+    pub fn minimum_reachability(mut self, minimum_reachability: i32) -> Self {
+        self.minimum_reachability = Some(minimum_reachability);
+        self
+    }
 
     /// The number of meters about this input location within which edges (roads between
-    /// intersections) will be considered as candidates for said location. When correlating this
-    /// location to the route network, try to only return results within this distance (meters)
-    /// from this location. If there are no candidates within this distance it will return the
-    /// closest candidate within reason. If this value is larger than the configured service limit
-    /// it will be clamped to that limit. The default is 0 meters.
-    pub radius: Option<i32>,
+    /// intersections) will be considered as candidates for said location.
+    ///
+    /// When correlating this location to the route network, try to only return results within
+    /// this distance (meters) from this location. If there are no candidates within this distance
+    /// it will return the closest candidate within reason.
+    /// If this value is larger than the configured service limit it will be clamped to that limit.
+    ///
+    /// Default: `0` meters
+    pub fn radius(mut self, radius: i32) -> Self {
+        self.radius = Some(radius);
+        self
+    }
 
-    /// Whether or not to rank the edge candidates for this location. The ranking is used as a
-    /// penalty within the routing algorithm so that some edges will be penalized more heavily than
-    /// others. If true candidates will be ranked according to their distance from the input and
-    /// various other attributes. If false the candidates will all be treated as equal which should
-    /// lead to routes that are just the most optimal path with emphasis about which edges were
-    /// selected.
-    pub rank_candidates: Option<bool>,
+    /// Whether or not to rank the edge candidates for this location.
+    ///
+    /// The ranking is used as a penalty within the routing algorithm so that some edges will be
+    /// penalized more heavily than others:
+    /// - If `true`, candidates will be ranked according to their distance from the input and
+    ///   various other attributes.
+    /// - If `false` the candidates will all be treated as equal which should lead to routes that
+    ///   are just the most optimal path with emphasis about which edges were selected.
+    pub fn rank_candidates(mut self, rank_candidates: bool) -> Self {
+        self.rank_candidates = Some(rank_candidates);
+        self
+    }
+    /// Which side of the road the location should be visited from.
+    ///
+    /// Whether the location should be visited from the [`Side::Same`], [`Side::Opposite`] or [`Side::Either`] side of
+    /// the road with respect to the side of the road the given locale drives on:
+    /// - In Germany (driving on the right side of the road), passing a value of same will only allow
+    ///   you to leave from or arrive at a location such that the location will be on your right.
+    /// - In Australia (driving on the left side of the road), passing a value of same will force the location to be on
+    ///   your left.
+    ///
+    /// A value of opposite will enforce arriving/departing from a location on the opposite side
+    /// of the road from that which you would be driving on while a value of either will make
+    /// no attempt limit the side of street that is available for the route.
+    ///
+    /// **Note:** If the location is not offset from the road centerline or is closest to an intersection
+    /// this option has no effect.
+    pub fn preferred_side(mut self, preferred_side: Side) -> Self {
+        self.preferred_side = Some(preferred_side);
+        self
+    }
+    /// Sets the type of the location
+    ///
+    /// Either [`LocationType::Break`], [`LocationType::Through`], [`LocationType::Via`] or [`LocationType::BreakThrough`].
+    /// The types of the first and last locations are ignored and are treated as [`LocationType::Break`].
+    /// Each type controls two characteristics:
+    /// - whether or not to allow an u-turn at the location and
+    /// - whether or not to generate guidance/legs at the location.
+    ///
+    /// Here is their behaviour:
+    /// - A [`LocationType::Break`] is a location at which we allows u-turns and generate legs and
+    ///   arrival/departure maneuvers.
+    /// - A [`LocationType::Through`] location is a location at which we neither allow u-turns
+    ///   nor generate legs or arrival/departure maneuvers.
+    /// - A [`LocationType::Via`] location is a location at which we allow u-turns,
+    ///   but do not generate legs or arrival/departure maneuvers.
+    /// - A [`LocationType::BreakThrough`] location is a location at which we do not allow u-turns,
+    ///   but do generate legs and arrival/departure maneuvers.
+    ///
+    /// Default: [`LocationType::Break`]
+    pub fn r#type(mut self, r#type: LocationType) -> Self {
+        self.r#type = Some(r#type);
+        self
+    }
 
-    /// If the location is not offset from the road centerline or is closest to an intersection
-    /// this option has no effect. Otherwise the determined side of street is used to determine
-    /// whether or not the location should be visited from the same, opposite or either side of the
-    /// road with respect to the side of the road the given locale drives on. In Germany (driving
-    /// on the right side of the road), passing a value of same will only allow you to leave from
-    /// or arrive at a location such that the location will be on your right. In Australia (driving
-    /// on the left side of the road), passing a value of same will force the location to be on
-    /// your left. A value of opposite will enforce arriving/departing from a location on the
-    /// opposite side of the road from that which you would be driving on while a value of either
-    /// will make no attempt limit the side of street that is available for the route.
-    pub preferred_side: Option<Side>,
-
-    ///  Type of location, either break, through, via or break_through. Each type controls two
-    ///  characteristics: whether or not to allow a u-turn at the location and whether or not to
-    ///  generate guidance/legs at the location. A break is a location at which we allows u-turns
-    ///  and generate legs and arrival/departure maneuvers. A through location is a location at
-    ///  which we neither allow u-turns nor generate legs or arrival/departure maneuvers. A via
-    ///  location is a location at which we allow u-turns but do not generate legs or
-    ///  arrival/departure maneuvers. A break_through location is a location at which we do not
-    ///  allow u-turns but do generate legs and arrival/departure maneuvers. If no type is
-    ///  provided, the type is assumed to be a break. The types of the first and last locations are
-    ///  ignored and are treated as breaks.
-    #[serde(rename = "type")]
-    pub type_: LocationType,
-
-    /// (optional) Preferred direction of travel for the start from the location. This can be
-    /// useful for mobile routing where a vehicle is traveling in a specific direction along a
-    /// road, and the route should start in that direction. The heading is indicated in degrees
-    /// from north in a clockwise direction, where north is 0°, east is 90°, south is 180°, and
-    /// west is 270°.
-    pub heading: Option<String>,
-
-    /// (optional) How close in degrees a given street's angle must be in order for it to be
-    /// considered as in the same direction of the heading parameter. The default value is 60
-    /// degrees.
-    pub heading_tolerance: Option<String>,
-
-    pub name: Option<String>,
-
-    /// Latitude of the map location in degrees. If provided the lat and lon parameters will be
-    /// treated as the routing location and the display_lat and display_lon will be used to
-    /// determine the side of street. Both display_lat and display_lon must be provided and valid
-    /// to achieve the desired effect.
-    pub display_lat: Option<f64>,
-
-    /// Longitude of the map location in degrees. If provided the lat and lon parameters will be
-    /// treated as the routing location and the display_lat and display_lon will be used to
-    /// determine the side of street. Both display_lat and display_lon must be provided and valid
-    /// to achieve the desired effect.
-    pub display_lon: Option<f64>,
-
-    /// The cutoff at which we will assume the input is too far away from civilisation to be worth
-    /// correlating to the nearest graph elements. The default is 35 km.
-    pub search_cutoff: Option<f64>,
-
+    /// Preferred direction of travel for the start from the location.
+    ///
+    /// This can be useful for mobile routing where a vehicle is traveling in a specific direction
+    /// along a road, and the route should start in that direction.
+    /// The heading is indicated in degrees from north in a clockwise direction:
+    /// - where north is `0°`,
+    /// - east is `90°`,
+    /// - south is `180°`, and
+    /// - west is `270°`.
+    ///
+    /// TODO: See if this is actually a String..
+    pub fn heading(mut self, heading: impl ToString) -> Self {
+        self.heading = Some(heading.to_string());
+        self
+    }
+    /// How close in degrees a given street's heading angle must be in order for it to be considered
+    /// as in the same direction of the heading parameter.
+    ///
+    /// The heading angle can be set via [`Self::heading`]
+    ///
+    /// Default: `60` degrees
+    pub fn heading_tolerance(mut self, heading_tolerance: impl ToString) -> Self {
+        self.heading_tolerance = Some(heading_tolerance.to_string());
+        self
+    }
+    /// TODO
+    pub fn name(mut self, name: impl ToString) -> Self {
+        self.name = Some(name.to_string());
+        self
+    }
+    /// Cutoff at which we will assume the input is too far away from civilisation to be worth
+    /// correlating to the nearest graph elements.
+    ///
+    /// Default: `35 km`
+    pub fn search_cutoff(mut self, search_cutoff: f32) -> Self {
+        self.search_cutoff = Some(search_cutoff);
+        self
+    }
     /// During edge correlation this is the tolerance used to determine whether or not to snap to
     /// the intersection rather than along the street, if the snap location is within this distance
-    /// from the intersection the intersection is used instead. The default is 5 meters.
-    pub node_snap_tolerance: Option<f64>,
-
-    /// If your input coordinate is less than this tolerance away from the edge centerline then we
-    /// set your side of street to none otherwise your side of street will be left or right
-    /// depending on direction of travel. The default is 5 meters.
-    pub street_side_tolerance: Option<f64>,
-
+    /// from the intersection is used instead.
+    ///
+    /// Default: `5 meters`
+    pub fn node_snap_tolerance(mut self, node_snap_tolerance: f32) -> Self {
+        self.node_snap_tolerance = Some(node_snap_tolerance);
+        self
+    }
+    /// Sets the tolerance for street side changes.
+    ///
+    /// The value means:
+    /// - If your input coordinate is less than this tolerance away from the edge centerline then we
+    ///   set your side of street to none.
+    /// - Otherwise your side of street will be left or right depending on direction of travel.
+    ///
+    /// Default: `5 meters`
+    pub fn street_side_tolerance(mut self, street_side_tolerance: f32) -> Self {
+        self.street_side_tolerance = Some(street_side_tolerance);
+        self
+    }
     /// The max distance in meters that the input coordinates or display ll can be from the edge
-    /// centerline for them to be used for determining the side of street. Beyond this distance the
-    /// side of street is set to none. The default is 1000 meters.
-    pub street_side_max_distance: Option<f64>,
+    /// centerline for them to be used for determining the side of street.
+    ///
+    /// Beyond this distance the side of street is set to none.
+    ///
+    /// Default: `1000 meters`
+    pub fn street_side_max_distance(mut self, street_side_max_distance: f32) -> Self {
+        self.street_side_max_distance = Some(street_side_max_distance);
+        self
+    }
 
-    /// Disables the preferred_side when set to same or opposite if the edge has a road class less
-    /// than that provided by street_side_cutoff. The road class must be one of the following
-    /// strings: motorway, trunk, primary, secondary, tertiary, unclassified, residential,
-    /// service_other. The default value is service_other so that preferred_side will not be
-    /// disabled for any edges.
-    pub street_side_cutoff: Option<f64>,
+    /// Allows configuring the preferred side selection.
+    ///
+    /// Disables the preferred side (set via [`Self::preferred_side`]) when set to [`Side::Same`]
+    /// or [`Side::Opposite`], if the edge has a road class less than that provided by this value.
+    ///
+    /// The road class must be one of the following strings:
+    /// - `motorway`,
+    /// - `trunk`,
+    /// - `primary`,
+    /// - `secondary`,
+    /// - `tertiary`,
+    /// - `unclassified`,
+    /// - `residential` or
+    /// - `service_other`.
+    ///
+    /// Default: service_other so that the preferred side will not be disabled for any edges
+    pub fn street_side_cutoff(mut self, street_side_cutoff: f32) -> Self {
+        self.street_side_cutoff = Some(street_side_cutoff);
+        self
+    }
+}
+
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+pub struct Location {
+    #[serde(rename = "lat")]
+    latitude: f32,
+    #[serde(rename = "lon")]
+    longitude: f32,
+    display_lat: Option<f32>,
+    display_lon: Option<f32>,
+    street: Option<String>,
+    way_id: Option<i64>,
+    minimum_reachability: Option<i32>,
+    radius: Option<i32>,
+    rank_candidates: Option<bool>,
+    preferred_side: Option<Side>,
+    #[serde(rename = "type")]
+    r#type: Option<LocationType>,
+    heading: Option<String>,
+    heading_tolerance: Option<String>,
+    name: Option<String>,
+    search_cutoff: Option<f32>,
+    node_snap_tolerance: Option<f32>,
+    street_side_tolerance: Option<f32>,
+    street_side_max_distance: Option<f32>,
+    street_side_cutoff: Option<f32>,
 }
 
 #[cfg(test)]
