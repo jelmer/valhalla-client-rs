@@ -1,6 +1,6 @@
 pub mod auto;
 pub mod bicycle;
-pub mod motor;
+pub mod motor_scooter;
 pub mod motorcycle;
 pub mod multimodal;
 pub mod pedestrian;
@@ -60,7 +60,7 @@ pub enum Costing {
     /// scooters on these roads. Motor scooter routes follow regular roads when needed,
     /// but avoid roads without motor_scooter, moped, or mofa access.
     #[serde(rename = "motor_scooter")]
-    MotorScooter(motor::MotorCostingOptions),
+    MotorScooter(motor_scooter::MotorScooterCostingOptions),
     /// Standard costing for travel by motorcycle.
     ///
     /// This costing model provides options to tune the route to take roadways (road touring) vs.
