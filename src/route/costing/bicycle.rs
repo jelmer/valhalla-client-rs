@@ -262,10 +262,10 @@ impl BicycleCostingOptions {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use super::*;
     #[test]
-    fn serialisation(){
+    fn serialisation() {
         insta::assert_json_snapshot!(BicycleCostingOptions::default(),@"{}")
     }
 }

@@ -472,10 +472,10 @@ pub enum UsedSpeedSources {
     Current,
 }
 #[cfg(test)]
-mod test{
+mod test {
     use super::*;
     #[test]
-    fn serialisation(){
+    fn serialisation() {
         insta::assert_json_snapshot!(AutoCostingOptions::default(),@"{}")
     }
 }

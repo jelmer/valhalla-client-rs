@@ -89,10 +89,10 @@ impl Default for Costing {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use super::*;
     #[test]
-    fn serialisation(){
+    fn serialisation() {
         insta::assert_json_snapshot!(Costing::Auto(Default::default()),@r#"
         {
           "costing": "auto",
