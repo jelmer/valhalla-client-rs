@@ -26,21 +26,37 @@ pub enum BicycleType {
 }
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BicycleCostingOptions {
-    bicycle_type: BicycleType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    bicycle_type: Option<BicycleType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     cycling_speed: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_roads: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_hills: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_ferry: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_living_streets: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     avoid_bad_surfaces: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     bss_return_cost: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     bss_return_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     shortest: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     maneuver_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     gate_cost: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     gate_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     country_crossing_cost: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     country_crossing_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     service_penalty: Option<f32>,
 }
 impl BicycleCostingOptions {
@@ -54,7 +70,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: [`BicycleType::Hybrid`]
     pub fn bicycle_type(mut self, bicycle_type: BicycleType) -> Self {
-        self.bicycle_type = bicycle_type;
+        self.bicycle_type = Some(bicycle_type);
         self
     }
 
@@ -242,5 +258,14 @@ impl BicycleCostingOptions {
     pub fn service_penalty(mut self, penalty: f32) -> Self {
         self.service_penalty = Some(penalty);
         self
+    }
+}
+
+#[cfg(test)]
+mod test{
+    use super::*;
+    #[test]
+    fn serialisation(){
+        insta::assert_json_snapshot!(BicycleCostingOptions::default(),@"{}")
     }
 }

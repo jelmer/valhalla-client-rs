@@ -20,3 +20,6 @@ url = "2.5.3"
 [features]
 default = ["gpx"]
 gpx = ["dep:gpx"]
+
+[dev-dependencies]
+insta = { version = "1.41.1", features = ["json"] }

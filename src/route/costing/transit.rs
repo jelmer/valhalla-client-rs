@@ -143,3 +143,12 @@ struct Filter {
     ids: Vec<String>,
     action: Action,
 }
+
+#[cfg(test)]
+mod test{
+    use super::*;
+    #[test]
+    fn serialisation(){
+        insta::assert_json_snapshot!(TransitCostingOptions::default(),@"{}")
+    }
+}

@@ -87,3 +87,17 @@ impl Default for Costing {
         Self::Auto(Default::default())
     }
 }
+
+#[cfg(test)]
+mod test{
+    use super::*;
+    #[test]
+    fn serialisation(){
+        insta::assert_json_snapshot!(Costing::Auto(Default::default()),@r#"
+        {
+          "costing": "auto",
+          "costing_options": {}
+        }
+        "#)
+    }
+}

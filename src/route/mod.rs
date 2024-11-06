@@ -379,17 +379,28 @@ pub enum Units {
 #[derive(Serialize, Default, Debug)]
 pub struct Manifest {
     #[serde(flatten)]
-    costing: costing::Costing,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    costing: Option<costing::Costing>,
     locations: Vec<Location>,
-    units: Units,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    units: Option<Units>,
+    #[serde(skip_serializing_if = "String::is_empty")]
     id: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     language: String,
-    directions_type: DirectionsType,
-    alternates: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    directions_type: Option<DirectionsType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    alternates: Option<i32>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     exclude_locations: Vec<Location>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     exclude_polygons: Vec<Vec<Coordinate>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     linear_references: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     prioritize_bidirectional: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     roundabout_exits: Option<bool>,
 }
 
@@ -404,7 +415,7 @@ impl Manifest {
     ///
     /// Default: [`costing::Costing::Auto`]
     pub fn costing(mut self, costing: costing::Costing) -> Self {
-        self.costing = costing;
+        self.costing = Some(costing);
         self
     }
 
@@ -434,7 +445,7 @@ impl Manifest {
     ///
     /// Default: [`Units::Metric`]
     pub fn units(mut self, units: Units) -> Self {
-        self.units = units;
+        self.units = Some(units);
         self
     }
 
@@ -467,7 +478,7 @@ impl Manifest {
     ///
     /// Default: [`DirectionsType::Instructions`]
     pub fn directions_type(mut self, directions_type: DirectionsType) -> Self {
-        self.directions_type = directions_type;
+        self.directions_type = Some(directions_type);
         self
     }
 
@@ -479,7 +490,7 @@ impl Manifest {
     /// - multipoint routes (i.e. routes with more than 2 locations) and
     /// - time dependent routes
     pub fn alternates(mut self, alternates: i32) -> Self {
-        self.alternates = alternates;
+        self.alternates = Some(alternates);
         self
     }
 
@@ -904,62 +915,11 @@ pub struct Location {
 mod test {
     use super::*;
     #[test]
-    fn serialisation_snapshots() {
-        let manifest = Manifest::default();
-        assert_eq!(
-            serde_json::to_value(manifest).unwrap(),
-            serde_json::json!({
-                  "costing": "auto",
-                  "costing_options": {
-                      "maneuver_penalty": null,
-                      "gate_cost": null,
-                      "gate_penalty": null,
-                      "private_access_penalty": null,
-                      "destination_only_penalty": null,
-                      "toll_booth_cost": null,
-                      "toll_booth_penalty": null,
-                      "ferry_cost": null,
-                      "use_ferry": null,
-                      "use_highways": null,
-                      "use_tolls": null,
-                      "use_living_streets": null,
-                      "use_tracks": null,
-                      "service_penalty": null,
-                      "service_factor": null,
-                      "country_crossing_cost": null,
-                      "country_crossing_penalty": null,
-                      "shortest": null,
-                      "use_distance": null,
-                      "disable_hierarchy_pruning": null,
-                      "top_speed": null,
-                      "fixed_speed": null,
-                      "closure_factor": null,
-                      "ignore_closures": null,
-                      "ignore_restrictions": null,
-                      "ignore_oneways": null,
-                      "ignore_non_vehicular_restrictions": null,
-                      "ignore_access": null,
-                      "speed_types": null,
-                      "height": null,
-                      "width": null,
-                      "exclude_unpaved": null,
-                      "exclude_cash_only_tolls": null,
-                      "include_hov2": null,
-                      "include_hov3": null,
-                      "include_hot": null
-                    },
-               "locations": [],
-               "units": "kilometers",
-               "id": "",
-               "language": "",
-               "directions_type": "instructions",
-               "alternates": 0,
-               "exclude_locations": [],
-               "exclude_polygons": [],
-               "linear_references": null,
-               "prioritize_bidirectional": null,
-               "roundabout_exits": null
-            })
-        )
+    fn serialisation() {
+        insta::assert_json_snapshot!(Manifest::default(),@r#"
+        {
+          "locations": []
+        }
+        "#);
     }
 }

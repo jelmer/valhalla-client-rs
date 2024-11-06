@@ -2,42 +2,78 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct TruckCostingOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
     maneuver_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     gate_cost: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     gate_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     private_access_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     destination_only_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     toll_booth_cost: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     toll_booth_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     ferry_cost: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_ferry: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_highways: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_tolls: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_living_streets: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_tracks: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     service_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     service_factor: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     country_crossing_cost: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     country_crossing_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     shortest: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_distance: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     disable_hierarchy_pruning: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     top_speed: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     fixed_speed: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     closure_factor: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_closures: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_restrictions: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_oneways: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_non_vehicular_restrictions: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_access: Option<bool>,
     // -- ↓ truck only ↓ --
+    #[serde(skip_serializing_if = "Option::is_none")]
     length: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     weight: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     axle_load: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     axle_count: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     hazmat: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     hgv_no_access_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     low_class_penalty: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     use_truck_route: Option<f32>,
 }
 impl TruckCostingOptions {
@@ -406,5 +442,15 @@ impl TruckCostingOptions {
     pub fn use_truck_route(mut self, use_truck_route: f32) -> Self {
         self.use_truck_route = Some(use_truck_route);
         self
+    }
+}
+
+
+#[cfg(test)]
+mod test{
+    use super::*;
+    #[test]
+    fn serialisation(){
+        insta::assert_json_snapshot!(TruckCostingOptions::default(),@"{}")
     }
 }
