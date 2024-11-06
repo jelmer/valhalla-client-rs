@@ -790,10 +790,8 @@ impl Location {
     /// - east is `90°`,
     /// - south is `180°`, and
     /// - west is `270°`.
-    ///
-    /// TODO: See if this is actually a String..
-    pub fn heading(mut self, heading: impl ToString) -> Self {
-        self.heading = Some(heading.to_string());
+    pub fn heading(mut self, heading: u32) -> Self {
+        self.heading = Some(heading);
         self
     }
     /// How close in degrees a given street's heading angle must be in order for it to be considered
@@ -802,11 +800,14 @@ impl Location {
     /// The heading angle can be set via [`Self::heading`]
     ///
     /// Default: `60` degrees
-    pub fn heading_tolerance(mut self, heading_tolerance: impl ToString) -> Self {
-        self.heading_tolerance = Some(heading_tolerance.to_string());
+    pub fn heading_tolerance(mut self, heading_tolerance: u32) -> Self {
+        self.heading_tolerance = Some(heading_tolerance);
         self
     }
-    /// TODO
+    /// Location or business name.
+    ///
+    /// May be used in the route narration directions.
+    /// Example: "You have arrived at <business name>."
     pub fn name(mut self, name: impl ToString) -> Self {
         self.name = Some(name.to_string());
         self
@@ -889,8 +890,8 @@ pub struct Location {
     preferred_side: Option<Side>,
     #[serde(rename = "type")]
     r#type: Option<LocationType>,
-    heading: Option<String>,
-    heading_tolerance: Option<String>,
+    heading: Option<u32>,
+    heading_tolerance: Option<u32>,
     name: Option<String>,
     search_cutoff: Option<f32>,
     node_snap_tolerance: Option<f32>,
