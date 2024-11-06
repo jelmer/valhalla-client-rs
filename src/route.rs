@@ -1,6 +1,6 @@
 use crate::costing;
 use serde::{Deserialize, Serialize};
-pub mod costing;
+
 #[derive(Deserialize, Debug, Clone)]
 pub(crate) struct Response {
     pub(crate) trip: Trip,
@@ -10,7 +10,7 @@ pub(crate) struct Response {
 pub struct Trip {
     pub status: i32,
     pub status_message: String,
-    pub units: Units,
+    pub units: super::Units,
     pub language: String,
     pub locations: Vec<Location>,
     pub warnings: Option<Vec<String>>,
@@ -398,16 +398,6 @@ pub enum DirectionsType {
     Instructions,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy)]
-pub enum Units {
-    #[default]
-    #[serde(rename = "kilometers")]
-    Metric,
-
-    #[serde(rename = "miles")]
-    Imperial,
-}
-
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
 pub struct Manifest {
@@ -467,11 +457,11 @@ impl Manifest {
     /// Sets the distance units for output.
     ///
     /// Possible unit types are
-    /// - miles via [`Units::Imperial`] and
-    /// - kilometers via [`Units::Metric`].
+    /// - miles via [`super::Units::Imperial`] and
+    /// - kilometers via [`super::Units::Metric`].
     ///
-    /// Default: [`Units::Metric`]
-    pub fn units(mut self, units: Units) -> Self {
+    /// Default: [`super::Units::Metric`]
+    pub fn units(mut self, units: super::Units) -> Self {
         self.units = Some(units);
         self
     }

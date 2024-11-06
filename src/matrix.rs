@@ -1,7 +1,7 @@
 use crate::costing;
+use crate::shapes::ShapeFormat;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::shapes::ShapeFormat;
 
 #[derive(Serialize, Default, Debug)]
 pub struct Manifest {
@@ -10,19 +10,23 @@ pub struct Manifest {
     #[serde(flatten)]
     costing: costing::Costing,
     id: String,
-    matrix_locations:Option<u32>,
-    date_time:Option<DateTime>,
+    matrix_locations: Option<u32>,
+    date_time: Option<DateTime>,
     verbose: Option<bool>,
     shape_format: Option<ShapeFormat>,
 }
 impl Manifest {
-    pub fn builder()->Self{
+    pub fn builder() -> Self {
         Default::default()
     }
     /// Sets the source and targets of the matrix
-    pub fn sources_to_targets(mut self, sources: impl IntoIterator<Item=Location>,targets:impl IntoIterator<Item=Location>) -> Self {
-        self.sources=sources.into_iter().collect();
-        self.targets=targets.into_iter().collect();
+    pub fn sources_to_targets(
+        mut self,
+        sources: impl IntoIterator<Item = Location>,
+        targets: impl IntoIterator<Item = Location>,
+    ) -> Self {
+        self.sources = sources.into_iter().collect();
+        self.targets = targets.into_iter().collect();
         self
     }
     /// Configures the costing model
@@ -50,8 +54,8 @@ impl Manifest {
     ///
     /// This is basically equivalent to:
     /// > "find the closest or best N locations out of the full location set"
-    pub fn minimum_matrix_locations_count(mut self,count:u32)->Self{
-        self.matrix_locations=Some(count);
+    pub fn minimum_matrix_locations_count(mut self, count: u32) -> Self {
+        self.matrix_locations = Some(count);
         self
     }
     /// Shortcut for configuring the arrival/departure date_time settings globally
@@ -72,8 +76,8 @@ impl Manifest {
     /// - when there's more or equal amount of `target`s than/as `source`s
     ///   - [`Location::date_time`] on any `target`
     ///   - [`DateTime::from_arrival_time`]
-    pub fn date_time(mut self, date_time:DateTime)->Self{
-        self.date_time=Some(date_time);
+    pub fn date_time(mut self, date_time: DateTime) -> Self {
+        self.date_time = Some(date_time);
         self
     }
     /// Modifies the verbosity of the output:
@@ -81,78 +85,76 @@ impl Manifest {
     ///   the `source` & `target` indices.
     /// - `false` will return more compact, nested row-major distances & durations arrays and
     ///   not echo `sources` and `targets`
-    /// 
+    ///
     /// Default: `true`
-    pub fn verbose_output(mut self, verbose:bool)->Self{
-        self.verbose=Some(verbose);
+    pub fn verbose_output(mut self, verbose: bool) -> Self {
+        self.verbose = Some(verbose);
         self
     }
     /// Specifies the [`ShapeFormat`] for the path shape of each connection.
-    pub fn shape_format(mut self,shape_format:ShapeFormat)->Self{
-        self.shape_format=Some(shape_format);
+    pub fn shape_format(mut self, shape_format: ShapeFormat) -> Self {
+        self.shape_format = Some(shape_format);
         self
     }
-
 }
 
 /// The local date and time at the location
 #[derive(Serialize, Debug)]
-pub struct DateTime{
-    r#type: MatrixDateType,
+pub struct DateTime {
+    r#type: MatrixDateTimeType,
     value: chrono::NaiveDateTime,
 }
 impl DateTime {
     /// Current departure time
-    pub fn from_current_departure_time()->Self{
-        Self{
-            r#type:MatrixDateType::CurrentDepartureTime,
-            value:chrono::Local::now().naive_local(),
+    pub fn from_current_departure_time() -> Self {
+        Self {
+            r#type: MatrixDateTimeType::CurrentDeparture,
+            value: chrono::Local::now().naive_local(),
         }
     }
     /// Specified departure time
-    pub  fn from_departure_time(depart_after: chrono::NaiveDateTime)->Self{
-        Self{
-            r#type:MatrixDateType::SpecifiedDepartureTime,
-            value: depart_after
+    pub fn from_departure_time(depart_after: chrono::NaiveDateTime) -> Self {
+        Self {
+            r#type: MatrixDateTimeType::SpecifiedDeparture,
+            value: depart_after,
         }
     }
     /// Specified arrival time
-    pub  fn from_arrival_time(arrive_by: chrono::NaiveDateTime)->Self{
-        Self{
-            r#type:MatrixDateType::SpecifiedArrivalTime,
-            value:arrive_by
+    pub fn from_arrival_time(arrive_by: chrono::NaiveDateTime) -> Self {
+        Self {
+            r#type: MatrixDateTimeType::SpecifiedArrival,
+            value: arrive_by,
         }
     }
 }
 
-#[derive(Serialize, Debug, Clone,Copy)]
+#[derive(Serialize, Debug, Clone, Copy)]
 #[repr(u8)]
-enum MatrixDateType{
-    CurrentDepartureTime = 0,
-    SpecifiedDepartureTime,
-    SpecifiedArrivalTime,
+enum MatrixDateTimeType {
+    CurrentDeparture = 0,
+    SpecifiedDeparture,
+    SpecifiedArrival,
 }
 
-
-#[derive(Serialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Copy, PartialEq, Debug)]
 pub struct Location {
-    lat:f32,
-    lon:f32,
+    lat: f32,
+    lon: f32,
     date_time: Option<chrono::NaiveDateTime>,
 }
-impl From<super::Coordinate> for Location{
+impl From<super::Coordinate> for Location {
     fn from((longitude, latitude): super::Coordinate) -> Self {
-        Self{
-            lat:latitude,
-            lon:longitude,
-            date_time:None,
+        Self {
+            lat: latitude,
+            lon: longitude,
+            date_time: None,
         }
     }
 }
 impl Location {
     /// Creates a new location from a longitude/latitude
-    pub fn new(longitude: f32, latitude: f32)->Self{
-        Self::from((longitude,latitude))
+    pub fn new(longitude: f32, latitude: f32) -> Self {
+        Self::from((longitude, latitude))
     }
     /// Expected date/time for the user to be at the location in the local time zone of departure or arrival.
     ///
@@ -175,47 +177,91 @@ impl Location {
     /// - when there's more or equal amount of `target`s than/as `source`s
     ///   - [`Location::date_time`] on any `target`
     ///   - [`DateTime::from_arrival_time`]
-    pub fn date_time(mut self, date_time:chrono::NaiveDateTime)->Self{
-        self.date_time=Some(date_time);
+    pub fn date_time(mut self, date_time: chrono::NaiveDateTime) -> Self {
+        self.date_time = Some(date_time);
         self
     }
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct Response{
+pub struct Response {
+    /// Name of the route request.
+    ///
+    /// If id is specified, the naming will be sent through to the response.
+    pub id: Option<String>,
+    /// Algorithm used
+    pub algorithm: String,
+    /// The sources of the matrix
+    pub sources: Vec<Location>,
+    /// The targets of the matrix
+    pub targets: Vec<Location>,
     /// Row-ordered time and distances between the sources and the targets.
-    /// 
+    ///
     /// The time and distance from the first location to all others forms the first row of the array,
     /// followed by the time and distance from the second source location to all target locations,
     /// etc.
-    pub sources_to_targets: Value,
-    /// The computed distance between each set of points.
-    /// 
-    /// Distance will always be `0.00` for
-    /// - the first element of the time-distance array for one_to_many,
-    /// - the last element in a many_to_one, and
-    /// - the first and last elements of a many_to_many.
-    pub distance:Value,
+    pub sources_to_targets: SourcesToTargets,
+    /// If the date_time was valid for an origin, date_time will return the local time at the destination.
+    pub date_time: Option<chrono::NaiveDateTime>,
+    /// The specified array of lat/lngs from the input request.
+    pub locations: Option<Vec<super::Coordinate>>,
+    /// Distance units for output.
+    ///
+    /// Possible unit types are miles via [`Units::Imperial`] and kilometers via [`Units::Metric`].
+    ///
+    /// Default: [`Units::Metric`]
+    pub units: super::Units,
+    /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
+    #[serde(default = "Vec::new")]
+    pub warnings: Vec<Value>,
+}
+
+/// Depending on [`Manifest::verbose_output`], different verbosity is being output
+#[derive(Deserialize, Debug, Clone)]
+#[serde(untagged)]
+pub enum SourcesToTargets {
+    /// A flat list of objects for distances & durations explicitly specifying the `source` & `target` indices.
+    Concise(ConciseSourceToTargets),
+    /// More compact, nested row-major distances & durations and not echo `sources` and `targets`
+    Verbose(Vec<Vec<VerboseSourceToTarget>>),
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct ConciseSourceToTargets {
     /// The computed time between each set of points.
-    /// 
+    ///
     /// Time will always be `0` for
     /// - the first element of the time-distance array for one_to_many,
     /// - the last element in a many_to_one, and
     /// - the first and last elements of a many_to_many
-    pub time:Value,
+    pub durations: Vec<Vec<u32>>,
+    /// The computed distance between each set of points.
+    ///
+    /// Distance will always be `0.00` for
+    /// - the first element of the time-distance array for one_to_many,
+    /// - the last element in a many_to_one, and
+    /// - the first and last elements of a many_to_many.
+    pub distances: Vec<Vec<f32>>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct VerboseSourceToTarget {
+    /// The computed distance between each set of points.
+    ///
+    /// Distance will always be `0.00` for
+    /// - the first element of the time-distance array for one_to_many,
+    /// - the last element in a many_to_one, and
+    /// - the first and last elements of a many_to_many.
+    pub distance: f32,
+    /// The computed time between each set of points.
+    ///
+    /// Time will always be `0` for
+    /// - the first element of the time-distance array for one_to_many,
+    /// - the last element in a many_to_one, and
+    /// - the first and last elements of a many_to_many
+    pub time: u32,
     /// The destination index into the locations array
-    pub to_index:Value,
+    pub from_index: usize,
     /// The origin index into the locations array
-    pub from_index:Value,
-    /// If the date_time was valid for an origin, date_time will return the local time at the destination.
-    pub date_time:Option<Value>,
-    /// The specified array of lat/lngs from the input request.
-    pub locations: Value,
-    /// Distance units for output.
-    /// 
-    /// Allowable unit types are mi (miles) and km (kilometers).
-    /// If no unit type is specified, the units default to kilometers.
-    pub units: Value,
-    /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
-    pub warnings:Option<Value>,
+    pub to_index: usize,
 }

@@ -7,7 +7,7 @@ pub mod route;
 pub mod shapes;
 
 use log::debug;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// A longitude, latitude coordinate in degrees
 ///
@@ -25,6 +25,16 @@ pub enum Error {
     Url(url::ParseError),
     Serde(serde_json::Error),
     RemoteError(RemoteError),
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy)]
+pub enum Units {
+    #[default]
+    #[serde(rename = "kilometers")]
+    Metric,
+
+    #[serde(rename = "miles")]
+    Imperial,
 }
 
 impl std::fmt::Display for Error {
@@ -107,7 +117,7 @@ impl Valhalla {
     /// let utrecht = Location::new(5.1214, 52.0907);
     /// let rotterdam = Location::new(4.4775302894411, 51.92485867761482);
     /// let den_haag = Location::new(4.324908478055228, 52.07934071633195);
-    /// 
+    ///
     /// let manifest = Manifest::builder()
     ///   .sources_to_targets([utrecht],[amsterdam,rotterdam,den_haag])
     ///   .date_time(DateTime::from_departure_time(Local::now().naive_local()))
@@ -116,11 +126,21 @@ impl Valhalla {
     /// let response = Valhalla::default()
     ///   .matrix(manifest)
     ///   .unwrap();
-    /// # assert!(!response.legs.is_empty());
+    /// # assert!(response.warnings.is_empty());
+    /// # assert_eq!(response.sources.len(),1);
+    /// # assert_eq!(response.targets.len(),3);
     /// ```
     pub fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
-        debug_assert_ne!(manifest.targets.len(),0, "a matrix route needs at least one target specified");
-        debug_assert_ne!(manifest.sources.len(),0, "a matrix route needs at least one source specified");
+        debug_assert_ne!(
+            manifest.targets.len(),
+            0,
+            "a matrix route needs at least one target specified"
+        );
+        debug_assert_ne!(
+            manifest.sources.len(),
+            0,
+            "a matrix route needs at least one source specified"
+        );
 
         debug!(
             "Sending routing request: {}",

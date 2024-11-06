@@ -18,7 +18,7 @@ These APIs are implemented:
 ```rust
 use valhalla_client::Valhalla;
 use valhalla_client::route::{Location, Manifest};
-use valhalla_client::route::costing::{Costing};
+use valhalla_client::costing::{Costing};
 
 let valhalla = Valhalla::default();
 
