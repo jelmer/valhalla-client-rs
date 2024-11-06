@@ -362,14 +362,10 @@ pub struct TransitStop {
     ///
     /// Example: "14 St - Union Sq"
     pub name: String,
-    /// Arrival date and time using the ISO 8601 format (YYYY-MM-DDThh:mm)
-    ///
-    /// Example: "2015-12-29T08:06".
-    pub arrival_date_time: String,
-    /// Departure date and time using the ISO 8601 format (YYYY-MM-DDThh:mm)
-    ///
-    /// Example: "2015-12-29T08:06"
-    pub departure_date_time: String,
+    /// Arrival date and time
+    pub arrival_date_time: chrono::NaiveDateTime,
+    /// Departure date and time
+    pub departure_date_time: chrono::NaiveDateTime,
     /// `true` if this stop is a marked as a parent stop.
     pub is_parent_stop: bool,
     /// `true` if the times are based on an assumed schedule because the actual schedule is not
