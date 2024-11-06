@@ -805,7 +805,7 @@ impl Location {
         self
     }
     /// Location or business name.
-    /// 
+    ///
     /// May be used in the route narration directions.
     /// Example: "You have arrived at <business name>."
     pub fn name(mut self, name: impl ToString) -> Self {
