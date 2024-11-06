@@ -3,13 +3,14 @@ use crate::shapes::ShapeFormat;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
 pub struct Manifest {
     pub(crate) targets: Vec<Location>,
     pub(crate) sources: Vec<Location>,
     #[serde(flatten)]
     costing: costing::Costing,
-    id: String,
+    id: Option<String>,
     matrix_locations: Option<u32>,
     date_time: Option<DateTime>,
     verbose: Option<bool>,
@@ -45,7 +46,7 @@ impl Manifest {
     ///
     /// If id is specified, the naming will be sent through to the response.
     pub fn id(mut self, id: impl ToString) -> Self {
-        self.id = id.to_string();
+        self.id = Some(id.to_string());
         self
     }
     /// Sets the minimum number of locations that need to be found satisfying the request
@@ -102,7 +103,7 @@ impl Manifest {
 #[derive(Serialize, Debug)]
 pub struct DateTime {
     r#type: MatrixDateTimeType,
-    #[serde(serialize_with="super::serialize_naive_date_time")]
+    #[serde(serialize_with = "super::serialize_naive_date_time")]
     value: chrono::NaiveDateTime,
 }
 impl DateTime {
@@ -141,7 +142,8 @@ enum MatrixDateTimeType {
 pub struct Location {
     lat: f32,
     lon: f32,
-    #[serde(serialize_with="super::serialize_naive_date_time_opt")]
+    #[serde(serialize_with = "super::serialize_naive_date_time_opt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<chrono::NaiveDateTime>,
 }
 impl From<super::Coordinate> for Location {
