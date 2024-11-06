@@ -3,7 +3,7 @@ name = "valhalla-client"
 version = "0.2.0"
 edition = "2021"
 description = "API client for the Valhalla routing engine"
-authors = ["Jelmer Vernooĳ <jelmer@jelmer.uk>"]
+authors = ["Jelmer Vernooĳ <jelmer@jelmer.uk>", "Frank Elsinga <frank.elsinga@tum.de>"]
 license = "Apache-2.0"
 repository = "https://github.com/jelmer/valhalla-client-rs"
 
