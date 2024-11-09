@@ -195,9 +195,9 @@ impl PedestrianCostingOptions {
     /// Maximum difficulty of hiking trails that is allowed.
     ///
     /// Values between `0` and `6` are allowed.
-    /// The values correspond to *sac_scale* values within OpenStreetMap, see reference
-    /// [here](https://wiki.openstreetmap.org/wiki/Key:sac_scale).
-    /// Higher difficulty trails can be allowed by specifying a higher value for max_hiking_difficulty
+    /// The values correspond to [`sac_scale`](https://wiki.openstreetmap.org/wiki/Key:sac_scale)
+    /// values within OpenStreetMap.
+    /// Higher difficulty trails can be allowed by specifying a higher value.
     ///
     /// Default: `1` (well cleared trails that are mostly flat or slightly sloped are allowed)
     pub fn max_hiking_difficulty(mut self, max_hiking_difficulty: f32) -> Self {

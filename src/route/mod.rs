@@ -207,76 +207,89 @@ pub struct Maneuver {
 
     pub instruction: String,
 
-    /// Text suitable for use as a verbal alert in a navigation application. The transition alert
-    /// instruction will prepare the user for the forthcoming transition. For example: "Turn right
-    /// onto North Prince Street".
+    /// Text suitable for use as a verbal alert in a navigation application.
+    ///
+    /// The transition alert instruction will prepare the user for the forthcoming transition.
+    ///
+    /// Example: "Turn right onto North Prince Street"
     pub verbal_transition_alert_instruction: Option<String>,
 
-    /// Text suitable for use as a verbal message immediately prior to the maneuver transition. For
-    /// example "Turn right onto North Prince Street, U.S. 2 22".
+    /// Text suitable for use as a verbal message immediately prior to the maneuver transition.
+    ///
+    /// Example: "Turn right onto North Prince Street, U.S. 2 22"
     pub verbal_pre_transition_instruction: Option<String>,
-    /// Text suitable for use as a verbal message immediately after the maneuver transition. For
-    /// example "Continue on U.S. 2 22 for 3.9 miles".
+    /// Text suitable for use as a verbal message immediately after the maneuver transition.
+    ///
+    /// Example: "Continue on U.S. 2 22 for 3.9 miles"
     pub verbal_post_transition_instruction: Option<String>,
 
-    ///  List of street names that are consistent along the entire nonobvious maneuver.
+    /// List of street names that are consistent along the entire nonobvious maneuver
     pub street_names: Option<Vec<String>>,
 
     /// When present, these are the street names at the beginning (transition point) of the
     /// nonobvious maneuver (if they are different than the names that are consistent along the
     /// entire nonobvious maneuver).
     pub begin_street_names: Option<Vec<String>>,
-
     /// Estimated time along the maneuver in seconds.
     pub time: f64,
-
-    /// Maneuver length in the units specified.
+    /// Maneuver length in the [`Units`] specified via [`Manifest::units`]
     pub length: f64,
-
     /// Index into the list of shape points for the start of the maneuver.
     pub begin_shape_index: usize,
     /// Index into the list of shape points for the end of the maneuver.
     pub end_shape_index: usize,
-    /// True if a toll booth is encountered on this maneuver.
+    /// `true` if a toll booth is encountered on this maneuver.
     pub toll: Option<bool>,
-    /// True if a highway is encountered on this maneuver.
+    /// `true` if a highway is encountered on this maneuver.
     pub highway: Option<bool>,
-    /// True if the maneuver is unpaved or rough pavement, or has any portions that have rough
+    /// `true` if the maneuver is unpaved or rough pavement, or has any portions that have rough
     /// pavement.
     pub rough: Option<bool>,
-    /// True if a gate is encountered on this maneuver.
+    /// `true` if a gate is encountered on this maneuver.
     pub gate: Option<bool>,
-    /// True if a ferry is encountered on this maneuver.
+    /// `true` if a ferry is encountered on this maneuver.
     pub ferry: Option<bool>,
     /// Contains the interchange guide information at a road junction associated with this
-    /// maneuver. See below for details.
+    /// maneuver.
+    ///
+    /// See [`Sign`] for details.
     pub sign: Option<Sign>,
     /// The spoke to exit roundabout after entering.
     pub roundabout_exit_count: Option<i64>,
-    /// Written depart time instruction. Typically used with a transit maneuver, such as "Depart:
-    /// 8:04 AM from 8 St - NYU".
+    /// Written depart time instruction.
+    ///
+    /// Typically used with a transit maneuver, such as "Depart: 8:04 AM from 8 St - NYU".
     pub depart_instruction: Option<String>,
-    /// Text suitable for use as a verbal depart time instruction. Typically used with a transit
-    /// maneuver, such as "Depart at 8:04 AM from 8 St - NYU".
+    /// Text suitable for use as a verbal depart time instruction.
+    ///
+    /// Typically used with a transit maneuver, such as "Depart at 8:04 AM from 8 St - NYU".
     pub verbal_depart_instruction: Option<String>,
-    /// Written arrive time instruction. Typically used with a transit maneuver, such as "Arrive:
-    /// 8:10 AM at 34 St - Herald Sq".
+    /// Written arrive time instruction.
+    ///
+    /// Typically used with a transit maneuver, such as "Arrive: 8:10 AM at 34 St - Herald Sq".
     pub arrive_instruction: Option<String>,
-    /// Text suitable for use as a verbal arrive time instruction. Typically used with a transit
-    /// maneuver, such as "Arrive at 8:10 AM at 34 St - Herald Sq".
+    /// Text suitable for use as a verbal arrive time instruction.
+    ///
+    /// Typically used with a transit maneuver, such as "Arrive at 8:10 AM at 34 St - Herald Sq".
     pub verbal_arrive_instruction: Option<String>,
-    /// Contains the attributes that describe a specific transit route. See below for details.
+    /// Contains the attributes that describe a specific transit route.
+    ///
+    /// See [`TransitInfo`] for details.
     pub transit_info: Option<TransitInfo>,
-    /// Contains the attributes that describe a specific transit stop. See below for details.
-    /// True if the verbal_pre_transition_instruction has been appended with the verbal instruction
-    /// of the next maneuver.
+    /// Contains the attributes that describe a specific transit stop.
+    ///
+    /// `true` if [`Self::verbal_pre_transition_instruction`] has been appended with
+    /// the verbal instruction of the next maneuver.
     pub verbal_multi_cue: Option<bool>,
 
-    /// Travel mode.
+    /// Travel mode
     pub travel_mode: TravelMode,
 
-    /// Used when travel_mode is bikeshare. Describes bike share maneuver. The default value is
-    /// NoneAction
+    /// Describes bike share maneuver.
+    ///
+    /// Used when travel_mode is bikeshare.
+    ///
+    /// Default: [`BssManeuverType::NoneAction`]
     pub bss_maneuver_type: Option<BssManeuverType>,
 }
 
@@ -284,36 +297,50 @@ pub struct Maneuver {
 pub struct TransitInfo {
     /// Global transit route identifier.
     pub onestop_id: String,
-    /// Short name describing the transit route. For example "N".
+    /// Short name describing the transit route
+    ///
+    /// Example: "N"
     pub short_name: String,
-    /// Long name describing the transit route. For example "Broadway Express".
+    /// Long name describing the transit route
+    ///
+    /// Example: "Broadway Express"
     pub long_name: String,
     /// The sign on a public transport vehicle that identifies the route destination to passengers.
-    /// For example "ASTORIA - DITMARS BLVD".
+    ///
+    /// Example: "ASTORIA - DITMARS BLVD"
     pub headsign: String,
-    /// The numeric color value associated with a transit route. The value for yellow would be
-    /// "16567306".
+    /// The numeric color value associated with a transit route.
+    ///
+    /// The value for yellow would be "16567306".
     pub color: i32,
-    /// The numeric text color value associated with a transit route. The value for black would be
-    /// "0".
+    /// The numeric text color value associated with a transit route.
+    ///
+    /// The value for black would be "0".
     pub text_color: String,
-    /// The description of the the transit route. For example "Trains operate from Ditmars
-    /// Boulevard, Queens, to Stillwell Avenue, Brooklyn, at all times. N trains in Manhattan
-    /// operate along Broadway and across the Manhattan Bridge to and from Brooklyn. Trains in
-    /// Brooklyn operate along 4th Avenue, then through Borough Park to Gravesend. Trains typically
-    /// operate local in Queens, and either express or local in Manhattan and Brooklyn, depending
-    /// on the time. Late night trains operate via Whitehall Street, Manhattan. Late night service
-    /// is local".
+    /// The description of the transit route
+    ///
+    /// Example: "Trains operate from Ditmars Boulevard, Queens, to Stillwell Avenue, Brooklyn, at all times
+    /// N trains in Manhattan operate along Broadway and across the Manhattan Bridge to and from Brooklyn.
+    /// Trains in Brooklyn operate along 4th Avenue, then through Borough Park to Gravesend.
+    /// Trains typically operate local in Queens, and either express or local in Manhattan and Brooklyn,
+    /// depending on the time. Late night trains operate via Whitehall Street, Manhattan.
+    /// Late night service is local"
     pub description: String,
     /// Global operator/agency identifier.
     pub operator_onestop_id: String,
-    /// Operator/agency name. For example, "BART", "King County Marine Division", and so on. Short
-    /// name is used over long name.
+    /// Operator/agency name
+    ///
+    /// Short name is used over long name.
+    ///
+    /// Example: "BART", "King County Marine Division", and so on.
     pub operator_name: String,
-    /// Operator/agency URL. For example, `http://web.mta.info/`.
+    /// Operator/agency URL
+    ///
+    /// Example: `http://web.mta.info/`.
     pub operator_url: String,
-    /// A list of the stops/stations associated with a specific transit route. See below for
-    /// details.
+    /// A list of the stops/stations associated with a specific transit route.
+    ///
+    /// See [`TransitStop`] for details.
     pub transit_stops: Vec<TransitStop>,
 }
 
@@ -330,17 +357,21 @@ pub enum TransitStopType {
 pub struct TransitStop {
     #[serde(rename = "type")]
     pub type_: TransitStopType,
-    /// Name of the stop or station. For example "14 St - Union Sq".
+    /// Name of the stop or station
+    ///
+    /// Example: "14 St - Union Sq"
     pub name: String,
-    /// Arrival date and time using the ISO 8601 format (YYYY-MM-DDThh:mm). For example,
-    /// "2015-12-29T08:06".
+    /// Arrival date and time using the ISO 8601 format (YYYY-MM-DDThh:mm)
+    ///
+    /// Example: "2015-12-29T08:06".
     pub arrival_date_time: String,
-    /// Departure date and time using the ISO 8601 format (YYYY-MM-DDThh:mm). For example,
-    /// "2015-12-29T08:06".
+    /// Departure date and time using the ISO 8601 format (YYYY-MM-DDThh:mm)
+    ///
+    /// Example: "2015-12-29T08:06"
     pub departure_date_time: String,
-    /// True if this stop is a marked as a parent stop.
+    /// `true` if this stop is a marked as a parent stop.
     pub is_parent_stop: bool,
-    /// True if the times are based on an assumed schedule because the actual schedule is not
+    /// `true` if the times are based on an assumed schedule because the actual schedule is not
     /// known.
     pub assumed_schedule: bool,
     /// Latitude of the transit stop in degrees.
@@ -395,6 +426,7 @@ pub struct Manifest {
 }
 
 impl Manifest {
+    #[must_use]
     pub fn builder() -> Self {
         Self::default()
     }
@@ -409,9 +441,10 @@ impl Manifest {
         self
     }
 
-    /// You specify locations as an ordered list of two or more locations.
+    /// Specify locations to visit as an ordered list
     ///
-    /// Locations are visited in the order specified.
+    /// Minimum number of locations: 2
+    ///
     /// A location must include a latitude and longitude in decimal degrees.
     /// The coordinates can come from many input sources, such as a GPS location, a point or a
     /// click on a map, a geocoding service, and so on.
@@ -423,6 +456,7 @@ impl Manifest {
     /// To build a route, you need to specify two [`LocationType::Break`] locations.
     /// In addition, you can include [`LocationType::Through`], [`LocationType::Via`] or
     /// [`LocationType::BreakThrough`] locations to influence the route path.
+    /// See [`LocationType`] for further information.
     pub fn locations(mut self, locations: impl IntoIterator<Item = Location>) -> Self {
         self.locations = locations.into_iter().collect();
         debug_assert!(self.locations.len() >= 2);
@@ -431,7 +465,9 @@ impl Manifest {
 
     /// Sets the distance units for output.
     ///
-    /// Possible unit types are miles via [`Units::Imperial`] and kilometers via [`Units::Metric`].
+    /// Possible unit types are
+    /// - miles via [`Units::Imperial`] and
+    /// - kilometers via [`Units::Metric`].
     ///
     /// Default: [`Units::Metric`]
     pub fn units(mut self, units: Units) -> Self {
@@ -439,7 +475,7 @@ impl Manifest {
         self
     }
 
-    /// Name your route request.
+    /// Name of the route request
     ///
     /// If id is specified, the naming will be sent through to the response.
     pub fn id(mut self, id: impl ToString) -> Self {
@@ -472,7 +508,7 @@ impl Manifest {
         self
     }
 
-    /// A number denoting how many alternate routes should be provided.
+    /// How many alternate routes should be provided    
     ///
     /// There may be no alternates or fewer alternates than the user specifies.
     ///
@@ -484,12 +520,9 @@ impl Manifest {
         self
     }
 
-    /// A set of locations to exclude or avoid within a route can be specified using a JSON array
-    /// of avoid_locations.
+    /// A set of [`Location`]s to exclude or avoid within a route
     ///
-    /// The avoid_locations have the same format as the locations list.
-    /// At a minimum each avoid location must include latitude and longitude.
-    /// The avoid_locations are mapped to the closest road or roads and these roads are excluded
+    /// They are mapped to the closest road or roads and these roads are excluded
     /// from the route path computation.
     pub fn exclude_locations(
         mut self,
@@ -505,7 +538,7 @@ impl Manifest {
     ///
     /// Roads intersecting these rings will be avoided during path finding.
     /// If you only need to avoid a few specific roads, it's much more efficient to use
-    /// exclude_locations.
+    /// [`Self::exclude_locations`].
     /// Valhalla will close open rings (i.e. copy the first coordinate to the last position).
     ///
     /// # Example:
@@ -582,10 +615,11 @@ impl Manifest {
         self
     }
 
-    /// When present and true, the successful route response will include a key linear_references.
+    /// When present and true, the successful route response will include a key `linear_references`.
     ///
     /// Its value is an array of base64-encoded [OpenLR location references](https://en.wikipedia.org/wiki/OpenLR),
     /// one for each graph edge of the road network matched by the input trace.
+    #[doc(hidden)] // TODO: need to implement the linear_references field
     pub fn include_linear_references(mut self) -> Self {
         self.linear_references = Some(true);
         self
@@ -873,7 +907,7 @@ impl Location {
     /// - `residential` or
     /// - `service_other`.
     ///
-    /// Default: service_other so that the preferred side will not be disabled for any edges
+    /// Default: `service_other` so that the preferred side will not be disabled for any edges
     pub fn street_side_cutoff(mut self, street_side_cutoff: f32) -> Self {
         self.street_side_cutoff = Some(street_side_cutoff);
         self
