@@ -25,10 +25,10 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::Reqwest(e) => write!(f, "reqwest error: {}", e),
-            Error::Url(e) => write!(f, "url error: {}", e),
-            Error::Serde(e) => write!(f, "serde error: {}", e),
-            Error::RemoteError(e) => write!(f, "remote error: {:?}", e),
+            Self::Reqwest(e) => write!(f, "reqwest error: {e}"),
+            Self::Url(e) => write!(f, "url error: {e}"),
+            Self::Serde(e) => write!(f, "serde error: {e}"),
+            Self::RemoteError(e) => write!(f, "remote error: {e:?}"),
         }
     }
 }

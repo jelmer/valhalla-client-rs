@@ -8,7 +8,7 @@ pub struct ShapePoint {
 
 impl From<&ShapePoint> for geo_types::Point {
     fn from(p: &ShapePoint) -> Self {
-        geo_types::Point::new(p.lon, p.lat)
+        Self::new(p.lon, p.lat)
     }
 }
 
@@ -26,7 +26,7 @@ fn decode_shape(encoded: &str) -> Vec<ShapePoint> {
             let mut byte = 0x20;
 
             while byte >= 0x20 {
-                byte = encoded.as_bytes()[i] as i32 - 63;
+                byte = i32::from(encoded.as_bytes()[i]) - 63;
                 i += 1;
                 ll[j] |= (byte & 0x1f) << shift;
                 shift += 5;
@@ -37,8 +37,8 @@ fn decode_shape(encoded: &str) -> Vec<ShapePoint> {
         }
 
         decoded.push(ShapePoint {
-            lon: -1.0 * ll[1] as f64 * inv,
-            lat: -1.0 * ll[0] as f64 * inv,
+            lon: -1.0 * f64::from(ll[1]) * inv,
+            lat: -1.0 * f64::from(ll[0]) * inv,
         });
     }
 

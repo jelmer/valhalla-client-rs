@@ -7,8 +7,9 @@ pub struct MultimodalCostingOptions {
     transit: Option<super::transit::TransitCostingOptions>,
 }
 impl MultimodalCostingOptions {
+    #[must_use]
     pub fn builder() -> Self {
-        Default::default()
+        Self::default()
     }
     /// Allows configuration of the transit Costing options
     ///
