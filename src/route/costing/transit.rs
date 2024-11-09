@@ -9,8 +9,9 @@ pub struct TransitCostingOptions {
     filters: Option<Filters>,
 }
 impl TransitCostingOptions {
+    #[must_use]
     pub fn builder() -> Self {
-        Default::default()
+        Self::default()
     }
     /// User's desire to use buses.
     ///
@@ -83,7 +84,7 @@ impl TransitCostingOptions {
     /// the OneStop ID `NYC_AUR`, similar with operators/agencies
     ///
     /// **Tip**: Can be combined with [`Self::filter_stops`] and/or [`Self::filter_operators`]
-    pub fn filter_routes<S>(
+    pub fn filter_routes(
         mut self,
         ids: impl IntoIterator<Item = impl ToString>,
         action: Action,

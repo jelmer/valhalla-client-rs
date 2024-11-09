@@ -46,8 +46,9 @@ pub struct BicycleCostingOptions {
     service_penalty: Option<f32>,
 }
 impl BicycleCostingOptions {
+    #[must_use]
     pub fn builder() -> Self {
-        Default::default()
+        Self::default()
     }
 
     /// Specifies the [`BicycleType`].

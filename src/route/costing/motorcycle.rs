@@ -47,8 +47,9 @@ pub struct MotorcycleCostingOptions {
     use_trails: Option<f32>,
 }
 impl MotorcycleCostingOptions {
+    #[must_use]
     pub fn builder() -> Self {
-        Default::default()
+        Self::default()
     }
 
     /// A cost applied when a [gate](http://wiki.openstreetmap.org/wiki/Tag:barrier%3Dgate) with

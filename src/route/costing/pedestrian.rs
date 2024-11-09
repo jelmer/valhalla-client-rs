@@ -28,8 +28,9 @@ pub struct PedestrianCostingOptions {
     mode_factor: Option<f32>,
 }
 impl PedestrianCostingOptions {
+    #[must_use]
     pub fn builder() -> Self {
-        Default::default()
+        Self::default()
     }
 
     /// Walking speed in kilometers per hour.

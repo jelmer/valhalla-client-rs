@@ -20,7 +20,7 @@ pub struct Trip {
 #[cfg(feature = "gpx")]
 impl From<Trip> for gpx::Gpx {
     fn from(trip: Trip) -> Self {
-        let mut gpx = gpx::Gpx {
+        let mut gpx = Self {
             version: gpx::GpxVersion::Gpx11,
             creator: Some("valhalla".to_string()),
             ..Default::default()
@@ -138,7 +138,7 @@ pub struct Leg {
 #[cfg(feature = "gpx")]
 impl From<&Leg> for gpx::TrackSegment {
     fn from(leg: &Leg) -> Self {
-        gpx::TrackSegment {
+        Self {
             points: leg.shape[leg.maneuvers[0].begin_shape_index
                 ..leg.maneuvers[leg.maneuvers.len() - 1].end_shape_index]
                 .iter()
@@ -677,8 +677,9 @@ pub enum Side {
 #[cfg(feature = "gpx")]
 impl From<&Location> for gpx::Waypoint {
     fn from(location: &Location) -> Self {
-        let point = geo_types::Point::new(location.longitude as f64, location.latitude as f64);
-        let mut p = gpx::Waypoint::new(point);
+        let point =
+            geo_types::Point::new(f64::from(location.longitude), f64::from(location.latitude));
+        let mut p = Self::new(point);
         p.name.clone_from(&location.name);
         p
     }
