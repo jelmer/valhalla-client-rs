@@ -254,9 +254,9 @@ pub struct VerboseResponse {
     pub date_time: Option<chrono::NaiveDateTime>,
     /// Distance units for output.
     ///
-    /// Possible unit types are miles via [`Units::Imperial`] and kilometers via [`Units::Metric`].
+    /// Possible unit types are miles via [`super::Units::Imperial`] and kilometers via [`super::Units::Metric`].
     ///
-    /// Default: [`Units::Metric`]
+    /// Default: [`super::Units::Metric`]
     pub units: super::Units,
     /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
     #[serde(default = "Vec::new")]
@@ -280,9 +280,11 @@ pub struct ConciseResponse {
     pub date_time: Option<chrono::NaiveDateTime>,
     /// Distance units for output.
     ///
-    /// Possible unit types are miles via [`Units::Imperial`] and kilometers via [`Units::Metric`].
+    /// Possible unit types are
+    /// - miles via [`super::Units::Imperial`] and
+    /// - kilometers via [`super::Units::Metric`]
     ///
-    /// Default: [`Units::Metric`]
+    /// Default: [`super::Units::Metric`]
     pub units: super::Units,
     /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
     #[serde(default = "Vec::new")]

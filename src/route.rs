@@ -233,7 +233,7 @@ pub struct Maneuver {
     pub begin_street_names: Option<Vec<String>>,
     /// Estimated time along the maneuver in seconds.
     pub time: f64,
-    /// Maneuver length in the [`Units`] specified via [`Manifest::units`]
+    /// Maneuver length in the [`super::Units`] specified via [`Manifest::units`]
     pub length: f64,
     /// Index into the list of shape points for the start of the maneuver.
     pub begin_shape_index: usize,
@@ -831,7 +831,7 @@ impl Location {
     /// Location or business name.
     ///
     /// May be used in the route narration directions.
-    /// Example: "You have arrived at <business name>."
+    /// Example: `"You have arrived at <business name>"`
     pub fn name(mut self, name: impl ToString) -> Self {
         self.name = Some(name.to_string());
         self
