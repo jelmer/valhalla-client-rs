@@ -14,6 +14,12 @@ use serde::{Deserialize, Serialize};
 /// See <https://en.wikipedia.org/wiki/Geographic_coordinate_system> for further context
 pub type Coordinate = (f32, f32);
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct CodedDescription {
+    pub code: u64,
+    pub description: String,
+}
+
 pub struct Valhalla {
     client: reqwest::blocking::Client,
     base_url: url::Url,
@@ -135,7 +141,7 @@ impl Valhalla {
     /// ```rust,no_run
     /// use chrono::Local;
     /// use valhalla_client::Valhalla;
-    /// use valhalla_client::matrix::{DateTime, Location, Manifest};
+    /// use valhalla_client::matrix::{DateTime, Location, Manifest,};
     /// use valhalla_client::costing::Costing;
     ///
     /// let amsterdam = Location::new(4.9041, 52.3676);
@@ -144,6 +150,7 @@ impl Valhalla {
     /// let den_haag = Location::new(4.324908478055228, 52.07934071633195);
     ///
     /// let manifest = Manifest::builder()
+    ///   .verbose_output(true)
     ///   .sources_to_targets([utrecht],[amsterdam,rotterdam,den_haag])
     ///   .date_time(DateTime::from_departure_time(Local::now().naive_local()))
     ///   .costing(Costing::Auto(Default::default()));
@@ -151,9 +158,12 @@ impl Valhalla {
     /// let response = Valhalla::default()
     ///   .matrix(manifest)
     ///   .unwrap();
-    /// # assert!(response.warnings.is_empty());
-    /// # assert_eq!(response.sources.unwrap().len(),1);
-    /// # assert_eq!(response.targets.unwrap().len(),3);
+    /// # use valhalla_client::matrix::Response;
+    /// # if let Response::Verbose(r) = response{
+    /// #   assert!(r.warnings.is_empty());
+    /// #   assert_eq!(r.sources.len(),1);
+    /// #   assert_eq!(r.targets.len(),3);
+    /// # };
     /// ```
     pub fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
         debug_assert_ne!(
