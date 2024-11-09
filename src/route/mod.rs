@@ -911,6 +911,9 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        assert_eq!(serde_json::to_value(Manifest::default()).unwrap(), serde_json::json!({"locations": []}));
+        assert_eq!(
+            serde_json::to_value(Manifest::default()).unwrap(),
+            serde_json::json!({"locations": []})
+        );
     }
 }

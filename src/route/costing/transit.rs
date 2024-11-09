@@ -88,7 +88,10 @@ impl TransitCostingOptions {
         ids: impl IntoIterator<Item = impl ToString>,
         action: Action,
     ) -> Self {
-        let new_filter = Filter { ids: ids.into_iter().map(|s| s.to_string()).collect(), action, };
+        let new_filter = Filter {
+            ids: ids.into_iter().map(|s| s.to_string()).collect(),
+            action,
+        };
         if let Some(ref mut filters) = self.filters {
             filters.routes = Some(new_filter);
         } else {
@@ -160,6 +163,9 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        assert_eq!(serde_json::to_value(TransitCostingOptions::default()).unwrap(), serde_json::json!({}));
+        assert_eq!(
+            serde_json::to_value(TransitCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        );
     }
 }

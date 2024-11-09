@@ -441,6 +441,9 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        assert_eq!(serde_json::to_value(AutoCostingOptions::default()).unwrap(), serde_json::json!({}));
+        assert_eq!(
+            serde_json::to_value(AutoCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        );
     }
 }
