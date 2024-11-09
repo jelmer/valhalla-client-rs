@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct AutoCostingOptions {
     maneuver_penalty: Option<f32>,
@@ -434,4 +435,15 @@ pub enum UsedSpeedSources {
     Predicted,
     #[serde(rename = "current")]
     Current,
+}
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(AutoCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        );
+    }
 }

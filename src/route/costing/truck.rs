@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct TruckCostingOptions {
     maneuver_penalty: Option<f32>,
@@ -406,5 +407,17 @@ impl TruckCostingOptions {
     pub fn use_truck_route(mut self, use_truck_route: f32) -> Self {
         self.use_truck_route = Some(use_truck_route);
         self
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(TruckCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        )
     }
 }

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct MultimodalCostingOptions {
     pedestrian: Option<super::pedestrian::PedestrianCostingOptions>,
@@ -22,5 +23,17 @@ impl MultimodalCostingOptions {
     pub fn pedestrian(mut self, pedestrian: super::pedestrian::PedestrianCostingOptions) -> Self {
         self.pedestrian = Some(pedestrian);
         self
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(MultimodalCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        )
     }
 }

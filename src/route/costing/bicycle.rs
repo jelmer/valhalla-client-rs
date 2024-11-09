@@ -24,9 +24,11 @@ pub enum BicycleType {
     #[serde(rename = "mountain")]
     Mountain,
 }
+
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BicycleCostingOptions {
-    bicycle_type: BicycleType,
+    bicycle_type: Option<BicycleType>,
     cycling_speed: Option<f32>,
     use_roads: Option<f32>,
     use_hills: Option<f32>,
@@ -54,7 +56,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: [`BicycleType::Hybrid`]
     pub fn bicycle_type(mut self, bicycle_type: BicycleType) -> Self {
-        self.bicycle_type = bicycle_type;
+        self.bicycle_type = Some(bicycle_type);
         self
     }
 
@@ -242,5 +244,17 @@ impl BicycleCostingOptions {
     pub fn service_penalty(mut self, penalty: f32) -> Self {
         self.service_penalty = Some(penalty);
         self
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(BicycleCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        );
     }
 }

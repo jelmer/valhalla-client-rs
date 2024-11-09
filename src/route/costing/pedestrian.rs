@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct PedestrianCostingOptions {
     walking_speed: Option<f32>,
@@ -291,4 +292,16 @@ pub enum PedestrianType {
     Foot,
     #[serde(rename = "blind")]
     Blind,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(PedestrianCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        );
+    }
 }

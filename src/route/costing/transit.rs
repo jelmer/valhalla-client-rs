@@ -1,15 +1,12 @@
 use serde::{Deserialize, Serialize};
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct TransitCostingOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_bus: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_rail: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_transfers: Option<f32>,
-    #[serde(skip_serializing_if = "Filters::is_empty")]
-    filters: Filters,
+    filters: Option<Filters>,
 }
 impl TransitCostingOptions {
     pub fn builder() -> Self {
@@ -60,10 +57,18 @@ impl TransitCostingOptions {
         ids: impl IntoIterator<Item = impl ToString>,
         action: Action,
     ) -> Self {
-        self.filters.stops = Some(Filter {
+        let new_filter = Filter {
             ids: ids.into_iter().map(|s| s.to_string()).collect(),
             action,
-        });
+        };
+        if let Some(ref mut filters) = self.filters {
+            filters.stops = Some(new_filter);
+        } else {
+            self.filters = Some(Filters {
+                stops: Some(new_filter),
+                ..Default::default()
+            });
+        }
         self
     }
     /// Sets a filter for one or more `routes`
@@ -83,10 +88,18 @@ impl TransitCostingOptions {
         ids: impl IntoIterator<Item = impl ToString>,
         action: Action,
     ) -> Self {
-        self.filters.routes = Some(Filter {
+        let new_filter = Filter {
             ids: ids.into_iter().map(|s| s.to_string()).collect(),
             action,
-        });
+        };
+        if let Some(ref mut filters) = self.filters {
+            filters.routes = Some(new_filter);
+        } else {
+            self.filters = Some(Filters {
+                routes: Some(new_filter),
+                ..Default::default()
+            });
+        }
         self
     }
     /// Sets a filter for one or more `operators`.
@@ -106,10 +119,18 @@ impl TransitCostingOptions {
         ids: impl IntoIterator<Item = impl ToString>,
         action: Action,
     ) -> Self {
-        self.filters.operators = Some(Filter {
+        let new_filter = Filter {
             ids: ids.into_iter().map(|s| s.to_string()).collect(),
             action,
-        });
+        };
+        if let Some(ref mut filters) = self.filters {
+            filters.operators = Some(new_filter);
+        } else {
+            self.filters = Some(Filters {
+                operators: Some(new_filter),
+                ..Default::default()
+            });
+        }
         self
     }
 }
@@ -123,23 +144,28 @@ pub enum Action {
     Exclude,
 }
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 struct Filters {
-    #[serde(skip_serializing_if = "Option::is_none")]
     routes: Option<Filter>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     operators: Option<Filter>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     stops: Option<Filter>,
-}
-impl Filters {
-    fn is_empty(&self) -> bool {
-        self.routes.is_none() && self.operators.is_none() && self.stops.is_none()
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 struct Filter {
     ids: Vec<String>,
     action: Action,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(TransitCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        );
+    }
 }

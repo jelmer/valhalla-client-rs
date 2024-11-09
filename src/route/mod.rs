@@ -376,18 +376,19 @@ pub enum Units {
     Imperial,
 }
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
 pub struct Manifest {
     #[serde(flatten)]
-    costing: costing::Costing,
+    costing: Option<costing::Costing>,
     locations: Vec<Location>,
-    units: Units,
-    id: String,
-    language: String,
-    directions_type: DirectionsType,
-    alternates: i32,
-    exclude_locations: Vec<Location>,
-    exclude_polygons: Vec<Vec<Coordinate>>,
+    units: Option<Units>,
+    id: Option<String>,
+    language: Option<String>,
+    directions_type: Option<DirectionsType>,
+    alternates: Option<i32>,
+    exclude_locations: Option<Vec<Location>>,
+    exclude_polygons: Option<Vec<Vec<Coordinate>>>,
     linear_references: Option<bool>,
     prioritize_bidirectional: Option<bool>,
     roundabout_exits: Option<bool>,
@@ -404,7 +405,7 @@ impl Manifest {
     ///
     /// Default: [`costing::Costing::Auto`]
     pub fn costing(mut self, costing: costing::Costing) -> Self {
-        self.costing = costing;
+        self.costing = Some(costing);
         self
     }
 
@@ -434,7 +435,7 @@ impl Manifest {
     ///
     /// Default: [`Units::Metric`]
     pub fn units(mut self, units: Units) -> Self {
-        self.units = units;
+        self.units = Some(units);
         self
     }
 
@@ -442,7 +443,7 @@ impl Manifest {
     ///
     /// If id is specified, the naming will be sent through to the response.
     pub fn id(mut self, id: impl ToString) -> Self {
-        self.id = id.to_string();
+        self.id = Some(id.to_string());
         self
     }
 
@@ -455,7 +456,7 @@ impl Manifest {
     ///
     /// Default: `en-US` (United States-based English)
     pub fn language(mut self, language: impl ToString) -> Self {
-        self.language = language.to_string();
+        self.language = Some(language.to_string());
         self
     }
     /// Sets the directions type
@@ -467,7 +468,7 @@ impl Manifest {
     ///
     /// Default: [`DirectionsType::Instructions`]
     pub fn directions_type(mut self, directions_type: DirectionsType) -> Self {
-        self.directions_type = directions_type;
+        self.directions_type = Some(directions_type);
         self
     }
 
@@ -479,7 +480,7 @@ impl Manifest {
     /// - multipoint routes (i.e. routes with more than 2 locations) and
     /// - time dependent routes
     pub fn alternates(mut self, alternates: i32) -> Self {
-        self.alternates = alternates;
+        self.alternates = Some(alternates);
         self
     }
 
@@ -494,7 +495,7 @@ impl Manifest {
         mut self,
         exclude_locations: impl IntoIterator<Item = Location>,
     ) -> Self {
-        self.exclude_locations = exclude_locations.into_iter().collect();
+        self.exclude_locations = Some(exclude_locations.into_iter().collect());
         self
     }
 
@@ -532,10 +533,11 @@ impl Manifest {
         mut self,
         exclude_polygons: impl IntoIterator<Item = impl IntoIterator<Item = Coordinate>>,
     ) -> Self {
-        self.exclude_polygons = exclude_polygons
+        let new_excluded_polygons = exclude_polygons
             .into_iter()
             .map(|e| e.into_iter().collect())
             .collect();
+        self.exclude_polygons = Some(new_excluded_polygons);
         self
     }
     /// Add one exterior rings as an excluded polygon.
@@ -571,8 +573,12 @@ impl Manifest {
         mut self,
         exclude_polygon: impl IntoIterator<Item = Coordinate>,
     ) -> Self {
-        self.exclude_polygons
-            .push(exclude_polygon.into_iter().collect());
+        let new_excluded_polygon = exclude_polygon.into_iter().collect();
+        if let Some(ref mut polygons) = self.exclude_polygons {
+            polygons.push(new_excluded_polygon);
+        } else {
+            self.exclude_polygons = Some(vec![new_excluded_polygon]);
+        }
         self
     }
 
@@ -904,62 +910,10 @@ pub struct Location {
 mod test {
     use super::*;
     #[test]
-    fn serialisation_snapshots() {
-        let manifest = Manifest::default();
+    fn serialisation() {
         assert_eq!(
-            serde_json::to_value(manifest).unwrap(),
-            serde_json::json!({
-                  "costing": "auto",
-                  "costing_options": {
-                      "maneuver_penalty": null,
-                      "gate_cost": null,
-                      "gate_penalty": null,
-                      "private_access_penalty": null,
-                      "destination_only_penalty": null,
-                      "toll_booth_cost": null,
-                      "toll_booth_penalty": null,
-                      "ferry_cost": null,
-                      "use_ferry": null,
-                      "use_highways": null,
-                      "use_tolls": null,
-                      "use_living_streets": null,
-                      "use_tracks": null,
-                      "service_penalty": null,
-                      "service_factor": null,
-                      "country_crossing_cost": null,
-                      "country_crossing_penalty": null,
-                      "shortest": null,
-                      "use_distance": null,
-                      "disable_hierarchy_pruning": null,
-                      "top_speed": null,
-                      "fixed_speed": null,
-                      "closure_factor": null,
-                      "ignore_closures": null,
-                      "ignore_restrictions": null,
-                      "ignore_oneways": null,
-                      "ignore_non_vehicular_restrictions": null,
-                      "ignore_access": null,
-                      "speed_types": null,
-                      "height": null,
-                      "width": null,
-                      "exclude_unpaved": null,
-                      "exclude_cash_only_tolls": null,
-                      "include_hov2": null,
-                      "include_hov3": null,
-                      "include_hot": null
-                    },
-               "locations": [],
-               "units": "kilometers",
-               "id": "",
-               "language": "",
-               "directions_type": "instructions",
-               "alternates": 0,
-               "exclude_locations": [],
-               "exclude_polygons": [],
-               "linear_references": null,
-               "prioritize_bidirectional": null,
-               "roundabout_exits": null
-            })
-        )
+            serde_json::to_value(Manifest::default()).unwrap(),
+            serde_json::json!({"locations": []})
+        );
     }
 }

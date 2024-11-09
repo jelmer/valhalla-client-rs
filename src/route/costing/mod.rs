@@ -87,3 +87,15 @@ impl Default for Costing {
         Self::Auto(Default::default())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(Costing::default()).unwrap(),
+            serde_json::json!({"costing": "auto", "costing_options": {}})
+        );
+    }
+}

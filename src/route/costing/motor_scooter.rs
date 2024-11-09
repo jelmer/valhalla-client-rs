@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 /// offers options for tuning motor_scooter routes.
 ///
 /// Factors unique to travel by motor_scooter influence the resulting route.
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct MotorScooterCostingOptions {
     maneuver_penalty: Option<f32>,
@@ -476,4 +477,15 @@ pub enum UsedSpeedSources {
     Predicted,
     #[serde(rename = "current")]
     Current,
+}
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(MotorScooterCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        );
+    }
 }

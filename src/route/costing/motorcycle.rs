@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 /// By default, motorcycle costing will default to higher class roads.
 /// The costing model recognizes factors unique to motorcycle travel and offers options for tuning
 /// motorcycle routes.
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct MotorcycleCostingOptions {
     maneuver_penalty: Option<f32>,
@@ -450,4 +451,16 @@ pub enum UsedSpeedSources {
     Predicted,
     #[serde(rename = "current")]
     Current,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn serialisation() {
+        assert_eq!(
+            serde_json::to_value(MotorcycleCostingOptions::default()).unwrap(),
+            serde_json::json!({})
+        );
+    }
 }
