@@ -24,39 +24,25 @@ pub enum BicycleType {
     #[serde(rename = "mountain")]
     Mountain,
 }
+
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BicycleCostingOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     bicycle_type: Option<BicycleType>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     cycling_speed: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_roads: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_hills: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_ferry: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_living_streets: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     avoid_bad_surfaces: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     bss_return_cost: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     bss_return_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     shortest: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     maneuver_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     gate_cost: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     gate_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     country_crossing_cost: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     country_crossing_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     service_penalty: Option<f32>,
 }
 impl BicycleCostingOptions {

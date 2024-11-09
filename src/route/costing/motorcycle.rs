@@ -3,83 +3,47 @@ use serde::{Deserialize, Serialize};
 /// By default, motorcycle costing will default to higher class roads.
 /// The costing model recognizes factors unique to motorcycle travel and offers options for tuning
 /// motorcycle routes.
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct MotorcycleCostingOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     maneuver_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     gate_cost: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     gate_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     private_access_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     destination_only_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     toll_booth_cost: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     toll_booth_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     ferry_cost: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_ferry: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_highways: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_tolls: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_living_streets: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_tracks: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     service_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     service_factor: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     country_crossing_cost: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     country_crossing_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     shortest: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_distance: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     disable_hierarchy_pruning: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     top_speed: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     fixed_speed: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     closure_factor: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_closures: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_restrictions: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_oneways: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_non_vehicular_restrictions: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     ignore_access: Option<bool>,
     // -- ↓ auto / motorcycle only ↓ --
-    #[serde(skip_serializing_if = "Option::is_none")]
     speed_types: Option<UsedSpeedSources>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     height: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     width: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     exclude_unpaved: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     exclude_cash_only_tolls: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     include_hov2: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     include_hov3: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     include_hot: Option<bool>,
     // -- ↓ motorcycle only ↓ --
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_trails: Option<f32>,
 }
 impl MotorcycleCostingOptions {

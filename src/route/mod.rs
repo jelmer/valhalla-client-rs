@@ -376,31 +376,21 @@ pub enum Units {
     Imperial,
 }
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
 pub struct Manifest {
     #[serde(flatten)]
-    #[serde(skip_serializing_if = "Option::is_none")]
     costing: Option<costing::Costing>,
     locations: Vec<Location>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     units: Option<Units>,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    id: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    language: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    id: Option<String>,
+    language: Option<String>,
     directions_type: Option<DirectionsType>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     alternates: Option<i32>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    exclude_locations: Vec<Location>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    exclude_polygons: Vec<Vec<Coordinate>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    exclude_locations: Option<Vec<Location>>,
+    exclude_polygons: Option<Vec<Vec<Coordinate>>>,
     linear_references: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     prioritize_bidirectional: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     roundabout_exits: Option<bool>,
 }
 
@@ -453,7 +443,7 @@ impl Manifest {
     ///
     /// If id is specified, the naming will be sent through to the response.
     pub fn id(mut self, id: impl ToString) -> Self {
-        self.id = id.to_string();
+        self.id = Some(id.to_string());
         self
     }
 
@@ -466,7 +456,7 @@ impl Manifest {
     ///
     /// Default: `en-US` (United States-based English)
     pub fn language(mut self, language: impl ToString) -> Self {
-        self.language = language.to_string();
+        self.language = Some(language.to_string());
         self
     }
     /// Sets the directions type
@@ -505,7 +495,7 @@ impl Manifest {
         mut self,
         exclude_locations: impl IntoIterator<Item = Location>,
     ) -> Self {
-        self.exclude_locations = exclude_locations.into_iter().collect();
+        self.exclude_locations = Some(exclude_locations.into_iter().collect());
         self
     }
 
@@ -543,10 +533,11 @@ impl Manifest {
         mut self,
         exclude_polygons: impl IntoIterator<Item = impl IntoIterator<Item = Coordinate>>,
     ) -> Self {
-        self.exclude_polygons = exclude_polygons
+        let new_excluded_polygons = exclude_polygons
             .into_iter()
             .map(|e| e.into_iter().collect())
             .collect();
+        self.exclude_polygons = Some(new_excluded_polygons);
         self
     }
     /// Add one exterior rings as an excluded polygon.
@@ -582,8 +573,12 @@ impl Manifest {
         mut self,
         exclude_polygon: impl IntoIterator<Item = Coordinate>,
     ) -> Self {
-        self.exclude_polygons
-            .push(exclude_polygon.into_iter().collect());
+        let new_excluded_polygon = exclude_polygon.into_iter().collect();
+        if let Some(ref mut polygons) = self.exclude_polygons {
+            polygons.push(new_excluded_polygon);
+        } else {
+            self.exclude_polygons = Some(vec![new_excluded_polygon]);
+        }
         self
     }
 

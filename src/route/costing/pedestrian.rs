@@ -1,52 +1,30 @@
 use serde::{Deserialize, Serialize};
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct PedestrianCostingOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     walking_speed: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     walkway_factor: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     sidewalk_factor: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     alley_factor: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     driveway_factor: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     step_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_ferry: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_living_streets: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_tracks: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_hills: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     use_lit: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     service_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     service_factor: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     destination_only_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     max_hiking_difficulty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     bss_rent_cost: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     bss_rent_penalty: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     shortest: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     max_distance: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     transit_start_end_max_distance: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     transit_transfer_max_distance: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     r#type: Option<PedestrianType>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     mode_factor: Option<f32>,
 }
 impl PedestrianCostingOptions {

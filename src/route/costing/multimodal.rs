@@ -1,10 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct MultimodalCostingOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pedestrian: Option<super::pedestrian::PedestrianCostingOptions>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     transit: Option<super::transit::TransitCostingOptions>,
 }
 impl MultimodalCostingOptions {
