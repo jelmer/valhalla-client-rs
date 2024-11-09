@@ -415,6 +415,6 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        insta::assert_json_snapshot!(TruckCostingOptions::default(),@"{}")
+        assert_eq!(serde_json::to_value(TruckCostingOptions::default()).unwrap(), serde_json::json!({}))
     }
 }

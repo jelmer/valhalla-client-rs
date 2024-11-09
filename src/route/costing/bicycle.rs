@@ -252,6 +252,6 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        insta::assert_json_snapshot!(BicycleCostingOptions::default(),@"{}")
+        assert_eq!(serde_json::to_value(BicycleCostingOptions::default()).unwrap(), serde_json::json!({}));
     }
 }

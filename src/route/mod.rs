@@ -911,10 +911,6 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        insta::assert_json_snapshot!(Manifest::default(),@r#"
-        {
-          "locations": []
-        }
-        "#);
+        assert_eq!(serde_json::to_value(Manifest::default()).unwrap(), serde_json::json!({"locations": []}));
     }
 }

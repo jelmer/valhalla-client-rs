@@ -31,6 +31,6 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        insta::assert_json_snapshot!(MultimodalCostingOptions::default(),@"{}")
+        assert_eq!(serde_json::to_value(MultimodalCostingOptions::default()).unwrap(), serde_json::json!({}))
     }
 }

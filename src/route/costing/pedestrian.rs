@@ -299,6 +299,6 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        insta::assert_json_snapshot!(PedestrianCostingOptions::default(),@"{}")
+        assert_eq!(serde_json::to_value(PedestrianCostingOptions::default()).unwrap(), serde_json::json!({}));
     }
 }

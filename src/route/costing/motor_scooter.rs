@@ -483,6 +483,6 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        insta::assert_json_snapshot!(MotorScooterCostingOptions::default(),@"{}")
+        assert_eq!(serde_json::to_value(MotorScooterCostingOptions::default()).unwrap(), serde_json::json!({}));
     }
 }

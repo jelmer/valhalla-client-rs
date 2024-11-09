@@ -93,11 +93,6 @@ mod test {
     use super::*;
     #[test]
     fn serialisation() {
-        insta::assert_json_snapshot!(Costing::Auto(Default::default()),@r#"
-        {
-          "costing": "auto",
-          "costing_options": {}
-        }
-        "#)
+        assert_eq!(serde_json::to_value(Costing::default()).unwrap(), serde_json::json!({"costing": "auto", "costing_options": {}}));
     }
 }
