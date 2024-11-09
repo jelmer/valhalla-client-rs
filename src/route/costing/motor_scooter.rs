@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Will avoid higher class roads unless the country overrides allows motor scooters on these roads.
+///
 /// Motor scooter routes follow regular roads when needed, but avoid roads without motor_scooter,
 /// moped, or mofa access. The costing model recognizes factors unique to motor_scooter travel and
 /// offers options for tuning motor_scooter routes.
