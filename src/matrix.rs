@@ -138,7 +138,7 @@ enum MatrixDateTimeType {
     SpecifiedArrival,
 }
 
-#[derive(Serialize, Deserialize, Default, Clone, Copy, PartialEq, Debug)]
+#[derive(Serialize, Default, Clone, Copy, PartialEq, Debug)]
 pub struct Location {
     lat: f32,
     lon: f32,
@@ -187,6 +187,39 @@ impl Location {
     }
 }
 
+/// [`Location`] which was configured in the input
+///
+/// Present only in `verbose` mode. Verbosity can be set via [`Manifest::verbose_output`]
+#[derive(Serialize, Deserialize, Default, Clone, Copy, PartialEq, Debug)]
+pub struct VerboseLocation {
+    /// Latitude as defined in [`super::Coordinate`]
+    pub lat: f32,
+    /// Longitude as defined in [`super::Coordinate`]
+    pub lon: f32,
+    /// time configured via [`Location::date_time`]
+    pub date_time: Option<chrono::NaiveDateTime>,
+}
+
+impl From<Location> for VerboseLocation {
+    fn from(value: Location) -> Self {
+        Self {
+            lat: value.lat,
+            lon: value.lon,
+            date_time: value.date_time,
+        }
+    }
+}
+
+impl From<VerboseLocation> for Location {
+    fn from(value: VerboseLocation) -> Self {
+        Self {
+            lat: value.lat,
+            lon: value.lon,
+            date_time: value.date_time,
+        }
+    }
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct Response {
     /// Name of the route request.
@@ -198,11 +231,11 @@ pub struct Response {
     /// The sources of the matrix
     ///
     /// Present only in `verbose` mode. Verbosity can be set via [`Manifest::verbose_output`]
-    pub sources: Option<Vec<Location>>,
+    pub sources: Option<Vec<VerboseLocation>>,
     /// The targets of the matrix
     ///
     /// Present only in `verbose` mode. Verbosity can be set via [`Manifest::verbose_output`]
-    pub targets: Option<Vec<Location>>,
+    pub targets: Option<Vec<VerboseLocation>>,
     /// Row-ordered time and distances between the sources and the targets.
     ///
     /// The time and distance from the first location to all others forms the first row of the array,
