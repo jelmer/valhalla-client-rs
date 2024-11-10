@@ -240,18 +240,6 @@ pub struct VerboseResponse {
     pub id: Option<String>,
     /// Algorithm used
     pub algorithm: String,
-    /// The sources of the matrix
-    pub sources: Vec<VerboseLocation>,
-    /// The targets of the matrix
-    pub targets: Vec<VerboseLocation>,
-    /// A flat list of objects for distances & durations explicitly specifying the `source` & `target` indices.
-    ///
-    /// The time and distance from the first location to all others forms the first row of the array,
-    /// followed by the time and distance from the second source location to all target locations,
-    /// etc.
-    pub sources_to_targets: Vec<Vec<VerboseSourceToTarget>>,
-    /// If the date_time was valid for an origin, date_time will return the local time at the destination.
-    pub date_time: Option<chrono::NaiveDateTime>,
     /// Distance units for output.
     ///
     /// Possible unit types are miles via [`super::Units::Imperial`] and kilometers via [`super::Units::Metric`].
@@ -261,6 +249,17 @@ pub struct VerboseResponse {
     /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
     #[serde(default = "Vec::new")]
     pub warnings: Vec<Value>,
+    /// The sources of the matrix
+    pub sources: Vec<VerboseLocation>,
+    /// The targets of the matrix
+    pub targets: Vec<VerboseLocation>,
+    /// A flat list of objects for distances & durations explicitly specifying the `source` & `target` indices.
+    ///
+    /// The arrays rows are:
+    /// - time and distance from the first source location to all target locations,
+    /// - time and distance from the second source location to all target locations,
+    /// - etc.
+    pub sources_to_targets: Vec<Vec<VerboseSourceToTarget>>,
 }
 #[derive(Deserialize, Debug, Clone)]
 pub struct ConciseResponse {
@@ -270,25 +269,22 @@ pub struct ConciseResponse {
     pub id: Option<String>,
     /// Algorithm used
     pub algorithm: String,
-    /// More compact, nested row-major distances & durations and not echo `sources` and `targets`
-    ///
-    /// The time and distance from the first location to all others forms the first row of the array,
-    /// followed by the time and distance from the second source location to all target locations,
-    /// etc.
-    pub sources_to_targets: ConciseSourceToTargets,
-    /// If the date_time was valid for an origin, date_time will return the local time at the destination.
-    pub date_time: Option<chrono::NaiveDateTime>,
     /// Distance units for output.
     ///
-    /// Possible unit types are
-    /// - miles via [`super::Units::Imperial`] and
-    /// - kilometers via [`super::Units::Metric`]
+    /// Possible unit types are miles via [`super::Units::Imperial`] and kilometers via [`super::Units::Metric`].
     ///
     /// Default: [`super::Units::Metric`]
     pub units: super::Units,
     /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
     #[serde(default = "Vec::new")]
-    pub warnings: Vec<super::CodedDescription>,
+    pub warnings: Vec<Value>,
+    /// More compact, nested row-major distances & durations
+    ///
+    /// The arrays rows are:
+    /// - time and distance from the first source location to all target locations,
+    /// - time and distance from the second source location to all target locations,
+    /// - etc.
+    pub sources_to_targets: ConciseSourceToTargets,
 }
 
 #[derive(Deserialize, Debug, Clone)]
