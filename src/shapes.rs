@@ -44,7 +44,7 @@ fn decode_shape(encoded: &str) -> Vec<ShapePoint> {
 
     decoded
 }
-pub(crate) fn deserialize_shape<'de, D>(deserializer: D) -> Result<Vec<ShapePoint>, D::Error>
+pub(create) fn deserialize_shape<'de, D>(deserializer: D) -> Result<Vec<ShapePoint>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {

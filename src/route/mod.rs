@@ -131,8 +131,8 @@ pub struct Leg {
 
     pub maneuvers: Vec<Maneuver>,
 
-    #[serde(deserialize_with = "crate::shapes::deserialize_shape")]
-    pub shape: Vec<crate::shapes::ShapePoint>,
+    #[serde(deserialize_with = "create::shapes::deserialize_shape")]
+    pub shape: Vec<create::shapes::ShapePoint>,
 }
 
 #[cfg(feature = "gpx")]
