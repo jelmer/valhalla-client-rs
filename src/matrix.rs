@@ -333,28 +333,28 @@ pub struct VerboseSourceToTarget {
     /// - valhalla is build with timezone support,
     /// - the time is below the settings `max_timedep_distance_matrix` or `max_timedep_distance`
     /// - departure/arrival time is unspecified via [`Manifest::date_time`] or [`Location::date_time`]
-    /// 
+    ///
     /// Example: `"Europe/Berlin"`
     pub time_zone_name: Option<String>,
     /// Timezone of when a user will arrive at this location or has to depart from the start point.
     ///
     /// For information how to differentiate between departure/arrival time, please see [`Manifest::date_time`] or [`Location::date_time`].
-    /// 
+    ///
     /// This field is included only if:
     /// - valhalla is build with timezone support,
     /// - the time is below the settings `max_timedep_distance_matrix` or `max_timedep_distance`
     /// - departure/arrival time is unspecified via [`Manifest::date_time`] or [`Location::date_time`]
-    /// 
+    ///
     /// Example: `"+01:00"`
     pub time_zone_offset: Option<String>,
     /// When a user will arrive at this location or has to depart from the start point.
     ///
     /// For information how to differentiate between departure/arrival time, please see [`Manifest::date_time`] or [`Location::date_time`].
-    /// 
+    ///
     /// This field is included only if:
     /// - the time is below the settings `max_timedep_distance_matrix` or `max_timedep_distance`
     /// - departure/arrival time is unspecified via [`Manifest::date_time`] or [`Location::date_time`]
-    /// 
+    ///
     /// Example: `"2024-11-07T15:26"`
     pub date_time: Option<chrono::NaiveDateTime>,
 }
