@@ -1,4 +1,17 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+
+/// Specifies the optional format for the path shape of each connection
+#[derive(Serialize, Debug, Clone, Copy)]
+pub enum ShapeFormat {
+    #[serde(rename = "polyline6")]
+    Polyline6,
+    #[serde(rename = "polyline5")]
+    Polyline5,
+    #[serde(rename = "geojson")]
+    GeoJSON,
+    #[serde(rename = "no_shape")]
+    NoShape,
+}
 
 #[derive(Debug, Clone)]
 pub struct ShapePoint {

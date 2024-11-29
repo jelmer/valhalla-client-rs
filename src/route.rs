@@ -1,15 +1,16 @@
+use crate::costing;
 use serde::{Deserialize, Serialize};
-pub mod costing;
+
 #[derive(Deserialize, Debug, Clone)]
-pub struct Response {
-    pub trip: Trip,
+pub(crate) struct Response {
+    pub(crate) trip: Trip,
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Trip {
     pub status: i32,
     pub status_message: String,
-    pub units: Units,
+    pub units: super::Units,
     pub language: String,
     pub locations: Vec<Location>,
     pub warnings: Option<Vec<String>>,
@@ -232,7 +233,7 @@ pub struct Maneuver {
     pub begin_street_names: Option<Vec<String>>,
     /// Estimated time along the maneuver in seconds.
     pub time: f64,
-    /// Maneuver length in the [`Units`] specified via [`Manifest::units`]
+    /// Maneuver length in the [`super::Units`] specified via [`Manifest::units`]
     pub length: f64,
     /// Index into the list of shape points for the start of the maneuver.
     pub begin_shape_index: usize,
@@ -361,14 +362,10 @@ pub struct TransitStop {
     ///
     /// Example: "14 St - Union Sq"
     pub name: String,
-    /// Arrival date and time using the ISO 8601 format (YYYY-MM-DDThh:mm)
-    ///
-    /// Example: "2015-12-29T08:06".
-    pub arrival_date_time: String,
-    /// Departure date and time using the ISO 8601 format (YYYY-MM-DDThh:mm)
-    ///
-    /// Example: "2015-12-29T08:06"
-    pub departure_date_time: String,
+    /// Arrival date and time
+    pub arrival_date_time: chrono::NaiveDateTime,
+    /// Departure date and time
+    pub departure_date_time: chrono::NaiveDateTime,
     /// `true` if this stop is a marked as a parent stop.
     pub is_parent_stop: bool,
     /// `true` if the times are based on an assumed schedule because the actual schedule is not
@@ -397,29 +394,19 @@ pub enum DirectionsType {
     Instructions,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy)]
-pub enum Units {
-    #[default]
-    #[serde(rename = "kilometers")]
-    Metric,
-
-    #[serde(rename = "miles")]
-    Imperial,
-}
-
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
 pub struct Manifest {
     #[serde(flatten)]
     costing: Option<costing::Costing>,
     locations: Vec<Location>,
-    units: Option<Units>,
+    units: Option<super::Units>,
     id: Option<String>,
     language: Option<String>,
     directions_type: Option<DirectionsType>,
     alternates: Option<i32>,
     exclude_locations: Option<Vec<Location>>,
-    exclude_polygons: Option<Vec<Vec<Coordinate>>>,
+    exclude_polygons: Option<Vec<Vec<super::Coordinate>>>,
     linear_references: Option<bool>,
     prioritize_bidirectional: Option<bool>,
     roundabout_exits: Option<bool>,
@@ -466,11 +453,11 @@ impl Manifest {
     /// Sets the distance units for output.
     ///
     /// Possible unit types are
-    /// - miles via [`Units::Imperial`] and
-    /// - kilometers via [`Units::Metric`].
+    /// - miles via [`super::Units::Imperial`] and
+    /// - kilometers via [`super::Units::Metric`].
     ///
-    /// Default: [`Units::Metric`]
-    pub fn units(mut self, units: Units) -> Self {
+    /// Default: [`super::Units::Metric`]
+    pub fn units(mut self, units: super::Units) -> Self {
         self.units = Some(units);
         self
     }
@@ -508,7 +495,7 @@ impl Manifest {
         self
     }
 
-    /// How many alternate routes should be provided    
+    /// How many alternate routes should be provided
     ///
     /// There may be no alternates or fewer alternates than the user specifies.
     ///
@@ -545,7 +532,7 @@ impl Manifest {
     /// ```rust,no_run
     /// use valhalla_client::Valhalla;
     /// use valhalla_client::route::{Location, Manifest};
-    /// use valhalla_client::route::costing::{Costing};
+    /// use valhalla_client::costing::{Costing};
     ///
     /// let polygon_around_midrecht_between_amsterdam_and_utrecht = vec![(4.9904022, 52.2528761), (4.8431168, 52.2392163), (4.8468933, 52.1799052), (4.9845657, 52.2102016), (4.9904022, 52.2528761)];
     /// let polygon_around_leiden = vec![(4.5891266, 52.1979985),(4.4105987, 52.2560249),(4.3034820, 52.1592721),(4.5005493, 52.0935286),(4.5726471, 52.1373684),(4.5898132, 52.1984193),(4.5891266, 52.1979985)];
@@ -564,7 +551,7 @@ impl Manifest {
     /// ```
     pub fn exclude_polygons(
         mut self,
-        exclude_polygons: impl IntoIterator<Item = impl IntoIterator<Item = Coordinate>>,
+        exclude_polygons: impl IntoIterator<Item = impl IntoIterator<Item = super::Coordinate>>,
     ) -> Self {
         let new_excluded_polygons = exclude_polygons
             .into_iter()
@@ -586,7 +573,7 @@ impl Manifest {
     /// ```rust,no_run
     /// use valhalla_client::Valhalla;
     /// use valhalla_client::route::{Location, Manifest};
-    /// use valhalla_client::route::costing::{Costing};
+    /// use valhalla_client::costing::{Costing};
     ///
     /// let polygon_around_leiden = vec![(4.5891266, 52.1979985),(4.4105987, 52.2560249),(4.3034820, 52.1592721),(4.5005493, 52.0935286),(4.5726471, 52.1373684),(4.5898132, 52.1984193),(4.5891266, 52.1979985)];
     /// let amsterdam = Location::new(4.9041, 52.3676);
@@ -604,7 +591,7 @@ impl Manifest {
     /// ```
     pub fn exclude_polygon(
         mut self,
-        exclude_polygon: impl IntoIterator<Item = Coordinate>,
+        exclude_polygon: impl IntoIterator<Item = super::Coordinate>,
     ) -> Self {
         let new_excluded_polygon = exclude_polygon.into_iter().collect();
         if let Some(ref mut polygons) = self.exclude_polygons {
@@ -684,12 +671,8 @@ impl From<&Location> for gpx::Waypoint {
         p
     }
 }
-/// A longitude, latitude coordinate in degrees
-///
-/// See <https://en.wikipedia.org/wiki/Geographic_coordinate_system> for further context
-pub type Coordinate = (f32, f32);
-impl From<Coordinate> for Location {
-    fn from((latitude, longitude): Coordinate) -> Self {
+impl From<super::Coordinate> for Location {
+    fn from((latitude, longitude): super::Coordinate) -> Self {
         Self {
             latitude,
             longitude,
@@ -848,7 +831,7 @@ impl Location {
     /// Location or business name.
     ///
     /// May be used in the route narration directions.
-    /// Example: "You have arrived at <business name>."
+    /// Example: `"You have arrived at <business name>"`
     pub fn name(mut self, name: impl ToString) -> Self {
         self.name = Some(name.to_string());
         self
