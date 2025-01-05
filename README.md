@@ -16,7 +16,8 @@ These APIs are implemented:
 ## Examples
 
 ```rust
-use valhalla_client::Valhalla;
+// an async version is available at valhalla_client::Valhalla
+use valhalla_client::blocking::Valhalla;
 use valhalla_client::route::{Location, Manifest};
 use valhalla_client::costing::{Costing};
 

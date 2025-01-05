@@ -21,11 +21,6 @@ pub struct CodedDescription {
     pub description: String,
 }
 
-pub struct Valhalla {
-    client: reqwest::blocking::Client,
-    base_url: url::Url,
-}
-
 #[derive(Debug)]
 pub enum Error {
     Reqwest(reqwest::Error),
@@ -82,16 +77,6 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
-impl Default for Valhalla {
-    fn default() -> Self {
-        Self::new(
-            url::Url::parse(VALHALLA_PUBLIC_API_URL)
-                .expect("VALHALLA_PUBLIC_API_URL is not a valid url"),
-        )
-    }
-}
-
 #[derive(Debug, Deserialize)]
 pub struct RemoteError {
     pub error_code: isize,
@@ -100,10 +85,134 @@ pub struct RemoteError {
     pub status: String,
 }
 
+#[cfg(feature = "blocking")]
+pub mod blocking {
+    use crate::{matrix, route, status, Error, VALHALLA_PUBLIC_API_URL};
+
+    pub struct Valhalla {
+        rt: tokio::runtime::Runtime,
+        client: super::Valhalla,
+    }
+    impl Valhalla {
+        /// Create a sync [Valhalla](https://valhalla.github.io/valhalla/) client
+        pub fn new(base_url: url::Url) -> Self {
+            Self {
+                rt: tokio::runtime::Builder::new_current_thread()
+                    .enable_io()
+                    .build()
+                    .expect("tokio runtime can be created"),
+                client: super::Valhalla::new(base_url),
+            }
+        }
+
+        /// Make a turn-by-turn routing request
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::route::{Location, Manifest,};
+        /// use valhalla_client::costing::Costing;
+        ///
+        /// let amsterdam = Location::new(4.9041, 52.3676);
+        /// let utrecht = Location::new(5.1214, 52.0907);
+        ///
+        /// let manifest = Manifest::builder()
+        ///   .locations([utrecht,amsterdam])
+        ///   .alternates(2)
+        ///   .costing(Costing::Auto(Default::default()))
+        ///   .language("de-De");
+        ///
+        /// let response = Valhalla::default().route(manifest).unwrap();
+        /// # use valhalla_client::matrix::Response;
+        /// # assert!(response.warnings.is_none());
+        /// # assert_eq!(response.locations.len(), 2);
+        /// ```
+        pub fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
+            self.rt
+                .block_on(async move { self.client.route(manifest).await })
+        }
+        /// Make a time-distance matrix routing request
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/matrix/api-reference> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::matrix::{DateTime, Location, Manifest,};
+        /// use valhalla_client::costing::Costing;
+        ///
+        /// let amsterdam = Location::new(4.9041, 52.3676);
+        /// let utrecht = Location::new(5.1214, 52.0907);
+        /// let rotterdam = Location::new(4.4775302894411, 51.92485867761482);
+        /// let den_haag = Location::new(4.324908478055228, 52.07934071633195);
+        ///
+        /// let manifest = Manifest::builder()
+        ///   .verbose_output(true)
+        ///   .sources_to_targets([utrecht],[amsterdam,rotterdam,den_haag])
+        ///   .date_time(DateTime::from_departure_time(chrono::Local::now().naive_local()))
+        ///   .costing(Costing::Auto(Default::default()));
+        ///
+        /// let response = Valhalla::default()
+        ///   .matrix(manifest)
+        ///   .unwrap();
+        /// # use valhalla_client::matrix::Response;
+        /// # if let Response::Verbose(r) = response{
+        /// #   assert!(r.warnings.is_empty());
+        /// #   assert_eq!(r.sources.len(),1);
+        /// #   assert_eq!(r.targets.len(),3);
+        /// # };
+        /// ```
+        pub fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
+            self.rt
+                .block_on(async move { self.client.matrix(manifest).await })
+        }
+        /// Make a status request
+        ///
+        /// This can be used as a health endpoint for the HTTP API or to toggle features in a frontend.
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/status/api-reference/> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::status::Manifest;
+        ///
+        /// let request = Manifest::builder()
+        ///   .verbose_output(false);
+        /// let response = Valhalla::default()
+        ///   .status(request).unwrap();
+        /// # assert!(response.version >= semver::Version::parse("3.1.4").unwrap());
+        /// # assert!(response.tileset_last_modified.timestamp() > 0);
+        /// # assert!(response.verbose.is_none());
+        /// ```
+        pub fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
+            self.rt
+                .block_on(async move { self.client.status(manifest).await })
+        }
+    }
+    impl Default for Valhalla {
+        fn default() -> Self {
+            Self::new(
+                url::Url::parse(VALHALLA_PUBLIC_API_URL)
+                    .expect("VALHALLA_PUBLIC_API_URL is not a valid url"),
+            )
+        }
+    }
+}
+
+const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
+pub struct Valhalla {
+    client: reqwest::Client,
+    base_url: url::Url,
+}
+
 impl Valhalla {
+    /// Create an async [Valhalla](https://valhalla.github.io/valhalla/) client
     pub fn new(base_url: url::Url) -> Self {
         Self {
-            client: reqwest::blocking::Client::new(),
+            client: reqwest::Client::new(),
             base_url,
         }
     }
@@ -111,7 +220,29 @@ impl Valhalla {
     /// Make a turn-by-turn routing request
     ///
     /// See <https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference> for details
-    pub fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
+    ///
+    /// # Example:
+    /// ```rust
+    /// # async fn route(){
+    /// use valhalla_client::Valhalla;
+    /// use valhalla_client::route::{Location, Manifest,};
+    /// use valhalla_client::costing::Costing;
+    ///
+    /// let amsterdam = Location::new(4.9041, 52.3676);
+    /// let utrecht = Location::new(5.1214, 52.0907);
+    ///
+    /// let manifest = Manifest::builder()
+    ///   .locations([utrecht,amsterdam])
+    ///   .alternates(2)
+    ///   .costing(Costing::Auto(Default::default()))
+    ///   .language("de-De");
+    ///
+    /// let response = Valhalla::default().route(manifest).await.unwrap();
+    /// # assert!(response.warnings.is_none());
+    /// # assert_eq!(response.locations.len(), 2);
+    /// # }
+    /// ```
+    pub async fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
         debug!(
             "Sending routing request: {}",
             serde_json::to_string(&manifest).unwrap()
@@ -125,12 +256,15 @@ impl Valhalla {
             .post(url)
             .json(&manifest)
             .send()
+            .await
             .map_err(Error::Reqwest)?;
         if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
+            return Err(Error::RemoteError(
+                response.json().await.map_err(Error::Reqwest)?,
+            ));
         }
         response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
+        let text = response.text().await.map_err(Error::Reqwest)?;
         let response: route::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response.trip)
     }
@@ -139,8 +273,8 @@ impl Valhalla {
     /// See <https://valhalla.github.io/valhalla/api/matrix/api-reference> for details
     ///
     /// # Example:
-    /// ```rust,no_run
-    /// use chrono::Local;
+    /// ```rust
+    /// # async fn matrix(){
     /// use valhalla_client::Valhalla;
     /// use valhalla_client::matrix::{DateTime, Location, Manifest,};
     /// use valhalla_client::costing::Costing;
@@ -153,11 +287,11 @@ impl Valhalla {
     /// let manifest = Manifest::builder()
     ///   .verbose_output(true)
     ///   .sources_to_targets([utrecht],[amsterdam,rotterdam,den_haag])
-    ///   .date_time(DateTime::from_departure_time(Local::now().naive_local()))
+    ///   .date_time(DateTime::from_departure_time(chrono::Local::now().naive_local()))
     ///   .costing(Costing::Auto(Default::default()));
     ///
     /// let response = Valhalla::default()
-    ///   .matrix(manifest)
+    ///   .matrix(manifest).await
     ///   .unwrap();
     /// # use valhalla_client::matrix::Response;
     /// # if let Response::Verbose(r) = response{
@@ -165,8 +299,9 @@ impl Valhalla {
     /// #   assert_eq!(r.sources.len(),1);
     /// #   assert_eq!(r.targets.len(),3);
     /// # };
+    /// # }
     /// ```
-    pub fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
+    pub async fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
         debug_assert_ne!(
             manifest.targets.len(),
             0,
@@ -191,16 +326,19 @@ impl Valhalla {
             .post(url)
             .json(&manifest)
             .send()
+            .await
             .map_err(Error::Reqwest)?;
         if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
+            return Err(Error::RemoteError(
+                response.json().await.map_err(Error::Reqwest)?,
+            ));
         }
         response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
+        let text = response.text().await.map_err(Error::Reqwest)?;
         let response: matrix::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response)
     }
-    /// Make a time-distance matrix routing request
+    /// Make a status request
     ///
     /// This can be used as a health endpoint for the HTTP API or to toggle features in a frontend.
     ///
@@ -208,18 +346,20 @@ impl Valhalla {
     ///
     /// # Example:
     /// ```rust,no_run
+    /// # async fn status(){
     /// use valhalla_client::Valhalla;
     /// use valhalla_client::status::Manifest;
     ///
     /// let request = Manifest::builder()
     ///   .verbose_output(false);
     /// let response = Valhalla::default()
-    ///   .status(request).unwrap();
+    ///   .status(request).await.unwrap();
     /// # assert!(response.version >= semver::Version::parse("3.1.4").unwrap());
     /// # assert!(response.tileset_last_modified.timestamp() > 0);
     /// # assert!(response.verbose.is_none());
+    /// # }
     /// ```
-    pub fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
+    pub async fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
         debug!(
             "Sending routing request: {}",
             serde_json::to_string(&manifest).unwrap()
@@ -233,13 +373,25 @@ impl Valhalla {
             .post(url)
             .json(&manifest)
             .send()
+            .await
             .map_err(Error::Reqwest)?;
         if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
+            return Err(Error::RemoteError(
+                response.json().await.map_err(Error::Reqwest)?,
+            ));
         }
         response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
+        let text = response.text().await.map_err(Error::Reqwest)?;
         let response: status::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response)
+    }
+}
+
+impl Default for Valhalla {
+    fn default() -> Self {
+        Self::new(
+            url::Url::parse(VALHALLA_PUBLIC_API_URL)
+                .expect("VALHALLA_PUBLIC_API_URL is not a valid url"),
+        )
     }
 }
