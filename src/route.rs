@@ -102,28 +102,22 @@ pub enum TravelMode {
 #[derive(Deserialize, Debug, Clone, Copy)]
 #[serde(untagged)]
 pub enum TravelType {
-    Drive(CarTravelType),
-    Pedestrian(PedestrianTravelType),
-    Bicycle(BicycleTravelType),
+    Drive(DriveTravelType),
+    Pedestrian(costing::pedestrian::PedestrianType),
+    Bicycle(costing::bicycle::BicycleType),
     Transit(TransitTravelType),
 }
 
 #[derive(Deserialize, Debug, Clone, Copy)]
-pub enum CarTravelType {
+pub enum DriveTravelType {
     #[serde(rename = "car")]
     Car,
-}
-
-#[derive(Deserialize, Debug, Clone, Copy)]
-pub enum PedestrianTravelType {
-    #[serde(rename = "foot")]
-    Foot,
-}
-
-#[derive(Deserialize, Debug, Clone, Copy)]
-pub enum BicycleTravelType {
-    #[serde(rename = "road")]
-    Road,
+    #[serde(rename = "motorcycle")]
+    Motorcycle,
+    #[serde(rename = "truck")]
+    Truck,
+    #[serde(rename = "motor_scooter")]
+    MotorScooter,
 }
 
 #[derive(Deserialize, Debug, Clone, Copy)]
