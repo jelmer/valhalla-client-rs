@@ -9,14 +9,34 @@ pub(crate) struct Response {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Trip {
+    /// Status code
     pub status: i32,
+    /// Status message
     pub status_message: String,
+    /// The via [`Manifest::units`] specified units of length are returned.
+    ///
+    /// Either [`super::Units::Metric`] or [`super::Units::Imperial`].
     pub units: super::Units,
+    /// The language of the narration instructions.
+    ///
+    /// If the user specified a language via [`Manifest::language`] in the directions options and the specified language was supported.
+    /// This returned value will be equal to the specified value.
+    /// Otherwise, this value will be the default (`en-US`) language.
     pub language: String,
+    /// Location information is returned in the same form as it is entered.
+    ///
+    /// Additional fields are added to indicate the side of the street.
+    /// Output can be changed via  via [`Manifest::locations`].
     pub locations: Vec<Location>,
+    /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
     pub warnings: Option<Vec<String>>,
+    /// Name of your route request.
+    ///
+    /// If an id is specified via [`Manifest::id`], the naming will be sent thru to the response.
     pub id: Option<String>,
+    /// List of [`Leg`]s constituting a [`Trip`]
     pub legs: Vec<Leg>,
+    /// Basic information about the entire [`Trip`]
     pub summary: Summary,
 }
 #[cfg(feature = "gpx")]
@@ -77,6 +97,15 @@ pub enum TravelMode {
     Bicycle,
     #[serde(rename = "transit")]
     Transit,
+}
+
+#[derive(Deserialize, Debug, Clone, Copy)]
+#[serde(untagged)]
+pub enum TravelType {
+    Drive(CarTravelType),
+    Pedestrian(PedestrianTravelType),
+    Bicycle(BicycleTravelType),
+    Transit(TransitTravelType),
 }
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -199,14 +228,59 @@ pub enum ManeuverType {
     BuildingExit,
 }
 
+#[derive(Deserialize, Default, Clone, Debug)]
+#[serde(default)]
+pub struct Sign {
+    /// list of exit number elements.
+    ///
+    /// If an exit number element exists, it is typically just one value
+    ///
+    /// Example: `91B`
+    pub exit_number_elements: Vec<ManeuverSignElement>,
+    /// Exit branch elements.
+    ///
+    /// The exit branch element text is the subsequent road name or route number after the sign
+    ///
+    /// Example: `I 95 North`
+    pub exit_branch_elements: Vec<ManeuverSignElement>,
+    /// Exit toward elements.
+    ///
+    /// The exit toward element text is the location where the road ahead goes.
+    /// The location is typically a control city, but may also be a future road name or route number.
+    ///
+    /// Example: `New York`
+    pub exit_toward_elements: Vec<ManeuverSignElement>,
+    /// Exit name elements.
+    ///
+    /// The exit name element is the interchange identifier.
+    /// Typically not used in the US.
+    ///
+    /// Example: `Gettysburg Pike`
+    pub exit_name_elements: Vec<ManeuverSignElement>,
+}
+
 #[derive(Deserialize, Clone, Debug)]
-pub struct Sign {}
+pub struct ManeuverSignElement {
+    /// Interchange sign text.
+    ///
+    /// Examples:
+    /// - exit number: `91B`
+    /// - exit branch: `I 95 North`
+    /// - exit toward: `New York`
+    /// - exit name: `Gettysburg Pike`
+    pub text: String,
+    /// The frequency of this sign element within a set a consecutive signs
+    pub consecutive_count: Option<usize>,
+}
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Maneuver {
+    /// Type of maneuver
     #[serde(rename = "type")]
     pub type_: ManeuverType,
-
+    /// Written maneuver instruction, describing the maneuver.
+    ///
+    /// Example: "Turn right onto Main Street".
     pub instruction: String,
 
     /// Text suitable for use as a verbal alert in a navigation application.
@@ -287,9 +361,12 @@ pub struct Maneuver {
     /// Travel mode
     pub travel_mode: TravelMode,
 
+    /// Travel type
+    pub travel_type: TravelType,
+
     /// Describes bike share maneuver.
     ///
-    /// Used when travel_mode is bikeshare.
+    /// Used when travel_mode is [`TravelMode::Bicycle`].
     ///
     /// Default: [`BssManeuverType::NoneAction`]
     pub bss_maneuver_type: Option<BssManeuverType>,
