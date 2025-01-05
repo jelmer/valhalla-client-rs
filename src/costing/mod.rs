@@ -17,7 +17,7 @@ use serde::Serialize;
 pub use transit::TransitCostingOptions;
 pub use truck::TruckCostingOptions;
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, PartialEq)]
 #[serde(tag = "costing", content = "costing_options")]
 #[allow(clippy::large_enum_variant)]
 pub enum Costing {

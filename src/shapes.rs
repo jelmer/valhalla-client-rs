@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Specifies the optional format for the path shape of each connection
-#[derive(Serialize, Debug, Clone, Copy)]
+#[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ShapeFormat {
     #[serde(rename = "polyline6")]
     Polyline6,
