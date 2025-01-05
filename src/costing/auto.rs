@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct AutoCostingOptions {
+struct AutoCostingOptionsInner {
     maneuver_penalty: Option<f32>,
     gate_cost: Option<f32>,
     gate_penalty: Option<f32>,
@@ -41,6 +41,11 @@ pub struct AutoCostingOptions {
     include_hov3: Option<bool>,
     include_hot: Option<bool>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct AutoCostingOptions {
+    auto: AutoCostingOptionsInner,
+}
 impl AutoCostingOptions {
     #[must_use]
     pub fn builder() -> Self {
@@ -54,7 +59,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `30` seconds
     pub fn gate_cost(mut self, gate_cost: f32) -> Self {
-        self.gate_cost = Some(gate_cost);
+        self.auto.gate_cost = Some(gate_cost);
         self
     }
     /// A penalty applied when a [gate](https://wiki.openstreetmap.org/wiki/Tag:barrier%3Dgate) with
@@ -62,7 +67,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `300` seconds
     pub fn gate_penalty(mut self, gate_penalty: f32) -> Self {
-        self.gate_penalty = Some(gate_penalty);
+        self.auto.gate_penalty = Some(gate_penalty);
         self
     }
     /// A penalty applied when a [gate](https://wiki.openstreetmap.org/wiki/Tag:barrier%3Dgate) or
@@ -71,13 +76,13 @@ impl AutoCostingOptions {
     ///
     /// Default: `450` seconds
     pub fn private_access_penalty(mut self, private_access_penalty: f32) -> Self {
-        self.private_access_penalty = Some(private_access_penalty);
+        self.auto.private_access_penalty = Some(private_access_penalty);
         self
     }
     /// A penalty applied when entering a road which is only allowed to enter if necessary to reach
     /// the [destination](https://wiki.openstreetmap.org/wiki/Tag:vehicle%3Ddestination).
     pub fn destination_only_penalty(mut self, destination_only_penalty: f32) -> Self {
-        self.destination_only_penalty = Some(destination_only_penalty);
+        self.auto.destination_only_penalty = Some(destination_only_penalty);
         self
     }
     /// A cost applied when a [toll booth](http://wiki.openstreetmap.org/wiki/Tag:barrier%3Dtoll_booth)
@@ -87,7 +92,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `15` seconds
     pub fn toll_booth_cost(mut self, toll_booth_cost: f32) -> Self {
-        self.toll_booth_cost = Some(toll_booth_cost);
+        self.auto.toll_booth_cost = Some(toll_booth_cost);
         self
     }
     /// A penalty applied to the cost when a
@@ -97,7 +102,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `0`
     pub fn toll_booth_penalty(mut self, toll_booth_penalty: f32) -> Self {
-        self.toll_booth_penalty = Some(toll_booth_penalty);
+        self.auto.toll_booth_penalty = Some(toll_booth_penalty);
         self
     }
     /// A cost applied when entering a ferry.
@@ -106,7 +111,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `300` seconds (5 minutes)
     pub fn ferry_cost(mut self, ferry_cost: f32) -> Self {
-        self.ferry_cost = Some(ferry_cost);
+        self.auto.ferry_cost = Some(ferry_cost);
         self
     }
     /// This value indicates the willingness to take ferries.
@@ -121,7 +126,7 @@ impl AutoCostingOptions {
     pub fn use_ferry(mut self, use_ferry: f32) -> Self {
         debug_assert!(use_ferry >= 0.0);
         debug_assert!(use_ferry <= 1.0);
-        self.use_ferry = Some(use_ferry);
+        self.auto.use_ferry = Some(use_ferry);
         self
     }
     /// This value indicates the willingness to take highways.
@@ -136,7 +141,7 @@ impl AutoCostingOptions {
     pub fn use_highways(mut self, use_highways: f32) -> Self {
         debug_assert!(use_highways >= 0.0);
         debug_assert!(use_highways <= 1.0);
-        self.use_highways = Some(use_highways);
+        self.auto.use_highways = Some(use_highways);
         self
     }
     /// This value indicates the willingness to take roads with tolls.
@@ -151,7 +156,7 @@ impl AutoCostingOptions {
     pub fn use_tolls(mut self, use_tolls: f32) -> Self {
         debug_assert!(use_tolls >= 0.0);
         debug_assert!(use_tolls <= 1.0);
-        self.use_tolls = Some(use_tolls);
+        self.auto.use_tolls = Some(use_tolls);
         self
     }
     /// This value indicates the willingness to take living streets.
@@ -168,7 +173,7 @@ impl AutoCostingOptions {
     pub fn use_living_streets(mut self, use_living_streets: f32) -> Self {
         debug_assert!(use_living_streets >= 0.0);
         debug_assert!(use_living_streets <= 1.0);
-        self.use_living_streets = Some(use_living_streets);
+        self.auto.use_living_streets = Some(use_living_streets);
         self
     }
     /// This value indicates the willingness to take track roads.
@@ -185,7 +190,7 @@ impl AutoCostingOptions {
     pub fn use_tracks(mut self, use_tracks: f32) -> Self {
         debug_assert!(use_tracks >= 0.0);
         debug_assert!(use_tracks <= 1.0);
-        self.use_tracks = Some(use_tracks);
+        self.auto.use_tracks = Some(use_tracks);
         self
     }
     /// A penalty applied for transition to generic service road.
@@ -194,14 +199,14 @@ impl AutoCostingOptions {
     /// - `0` trucks and
     /// - `15` for cars, buses, motor scooters and motorcycles.
     pub fn service_penalty(mut self, service_penalty: f32) -> Self {
-        self.service_penalty = Some(service_penalty);
+        self.auto.service_penalty = Some(service_penalty);
         self
     }
     /// A factor that modifies (multiplies) the cost when generic service roads are encountered.
     ///
     /// Default: `1`
     pub fn service_factor(mut self, service_factor: f32) -> Self {
-        self.service_factor = Some(service_factor);
+        self.auto.service_factor = Some(service_factor);
         self
     }
     /// A cost applied when encountering an international border.
@@ -210,7 +215,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `600` seconds
     pub fn country_crossing_cost(mut self, country_crossing_cost: f32) -> Self {
-        self.country_crossing_cost = Some(country_crossing_cost);
+        self.auto.country_crossing_cost = Some(country_crossing_cost);
         self
     }
     /// A penalty applied for a country crossing.
@@ -219,7 +224,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `0`
     pub fn country_crossing_penalty(mut self, country_crossing_penalty: f32) -> Self {
-        self.country_crossing_penalty = Some(country_crossing_penalty);
+        self.auto.country_crossing_penalty = Some(country_crossing_penalty);
         self
     }
     /// Changes the metric to quasi-shortest, i.e. **purely distance-based costing**.
@@ -230,7 +235,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `false`
     pub fn only_consider_quasi_shortest(mut self) -> Self {
-        self.shortest = Some(true);
+        self.auto.shortest = Some(true);
         self
     }
 
@@ -245,7 +250,7 @@ impl AutoCostingOptions {
     pub fn use_distance(mut self, use_distance: f32) -> Self {
         debug_assert!(use_distance >= 0.0);
         debug_assert!(use_distance <= 1.0);
-        self.use_distance = Some(use_distance);
+        self.auto.use_distance = Some(use_distance);
         self
     }
     /// Disable hierarchies to calculate the actual optimal route.
@@ -255,7 +260,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `false`
     pub fn disable_hierarchy_pruning(mut self) -> Self {
-        self.disable_hierarchy_pruning = Some(true);
+        self.auto.disable_hierarchy_pruning = Some(true);
         self
     }
     /// Top speed the vehicle can go.
@@ -269,7 +274,7 @@ impl AutoCostingOptions {
     pub fn top_speed(mut self, top_speed: f32) -> Self {
         debug_assert!(top_speed >= 10.0);
         debug_assert!(top_speed <= 252.0);
-        self.top_speed = Some(top_speed);
+        self.auto.top_speed = Some(top_speed);
         self
     }
     /// Fixed speed the vehicle can go. Used to override the calculated speed.
@@ -282,7 +287,7 @@ impl AutoCostingOptions {
     pub fn fixed_speed(mut self, fixed_speed: u32) -> Self {
         debug_assert!(fixed_speed >= 1);
         debug_assert!(fixed_speed <= 252);
-        self.fixed_speed = Some(fixed_speed);
+        self.auto.fixed_speed = Some(fixed_speed);
         self
     }
     /// A factor that penalizes the cost when traversing a closed edge
@@ -299,7 +304,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `9.0`
     pub fn closure_factor(mut self, closure_factor: f32) -> Self {
-        self.closure_factor = Some(closure_factor);
+        self.auto.closure_factor = Some(closure_factor);
         self
     }
     /// If set ignores all closures, marked due to live traffic closures, during routing.
@@ -307,7 +312,7 @@ impl AutoCostingOptions {
     /// **Note:** This option cannot be set if `location.search_filter.exclude_closures` is also
     /// specified in the request and will return an error if it is
     pub fn ignore_closures(mut self) -> Self {
-        self.ignore_closures = Some(true);
+        self.auto.ignore_closures = Some(true);
         self
     }
     /// If set, ignores any restrictions (e.g. turn/dimensional/conditional restrictions).
@@ -316,7 +321,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `false`
     pub fn ignore_restrictions(mut self) -> Self {
-        self.ignore_restrictions = Some(true);
+        self.auto.ignore_restrictions = Some(true);
         self
     }
     /// If set, ignores one-way restrictions.
@@ -326,7 +331,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `false`
     pub fn ignore_oneways(mut self) -> Self {
-        self.ignore_oneways = Some(true);
+        self.auto.ignore_oneways = Some(true);
         self
     }
     /// Similar to [`Self::ignore_restrictions`], but will respect restrictions that impact vehicle safety,
@@ -334,7 +339,7 @@ impl AutoCostingOptions {
     ///
     /// Default: `false`
     pub fn ignore_non_vehicular_restrictions(mut self) -> Self {
-        self.ignore_non_vehicular_restrictions = Some(true);
+        self.auto.ignore_non_vehicular_restrictions = Some(true);
         self
     }
     /// Ignore mode-specific access tags.
@@ -343,7 +348,7 @@ impl AutoCostingOptions {
     ///
     /// Default `false`
     pub fn ignore_access(mut self) -> Self {
-        self.ignore_access = Some(true);
+        self.auto.ignore_access = Some(true);
         self
     }
     /// Will determine which speed sources are used, if available.
@@ -358,9 +363,9 @@ impl AutoCostingOptions {
     /// Default: [`UsedSpeedSources::All`] sources (again, only if available)
     pub fn speed_types(mut self, speed_types: UsedSpeedSources) -> Self {
         if speed_types == UsedSpeedSources::All {
-            self.speed_types = None
+            self.auto.speed_types = None
         } else {
-            self.speed_types = Some(speed_types);
+            self.auto.speed_types = Some(speed_types);
         }
         self
     }
@@ -371,7 +376,7 @@ impl AutoCostingOptions {
     /// - `car`/`bus`/`taxi`: `1.9` and
     /// - `truck`: `4.11`
     pub fn height(mut self, height: f32) -> Self {
-        self.height = Some(height);
+        self.auto.height = Some(height);
         self
     }
     /// The width of the vehicle (in meters).
@@ -380,7 +385,7 @@ impl AutoCostingOptions {
     /// - `car`/`bus`/`taxi`: `1.6` and
     /// - `truck`: `2.6`
     pub fn width(mut self, width: f32) -> Self {
-        self.width = Some(width);
+        self.auto.width = Some(width);
         self
     }
     /// Exclude unpaved roads.
@@ -391,35 +396,35 @@ impl AutoCostingOptions {
     ///
     /// Default: `false`.
     pub fn exclude_unpaved(mut self) -> Self {
-        self.exclude_unpaved = Some(true);
+        self.auto.exclude_unpaved = Some(true);
         self
     }
     /// Desire to avoid routes with cash-only tolls.
     ///
     /// Default: `false`.
     pub fn exclude_cash_only_tolls(mut self, exclude_cash_only_tolls: bool) -> Self {
-        self.exclude_cash_only_tolls = Some(exclude_cash_only_tolls);
+        self.auto.exclude_cash_only_tolls = Some(exclude_cash_only_tolls);
         self
     }
     /// Include HOV roads with a 2-occupant requirement in the route when advantageous.
     ///
     /// Default: `false`.
     pub fn include_hov2(mut self, include_hov2: bool) -> Self {
-        self.include_hov2 = Some(include_hov2);
+        self.auto.include_hov2 = Some(include_hov2);
         self
     }
     /// Include HOV roads with a 3-occupant requirement in the route when advantageous.
     ///
     /// Default: `false`.
     pub fn include_hov3(mut self, include_hov3: bool) -> Self {
-        self.include_hov3 = Some(include_hov3);
+        self.auto.include_hov3 = Some(include_hov3);
         self
     }
     /// Include tolled HOV roads which require the driver to pay a toll if the occupant requirement isn't met.
     ///
     /// Default: `false`.
     pub fn include_hot(mut self, include_hot: bool) -> Self {
-        self.include_hot = Some(include_hot);
+        self.auto.include_hot = Some(include_hot);
         self
     }
 }
@@ -444,7 +449,7 @@ mod test {
     fn serialisation() {
         assert_eq!(
             serde_json::to_value(AutoCostingOptions::default()).unwrap(),
-            serde_json::json!({})
+            serde_json::json!({"auto":{}})
         );
     }
 }

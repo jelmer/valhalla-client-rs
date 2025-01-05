@@ -5,29 +5,29 @@ pub enum BicycleType {
     /// Road
     ///
     /// A road-style bicycle with narrow tires that is generally lightweight and designed for speed on paved surfaces.
-    #[serde(rename = "road")]
+    #[serde(rename = "Road", alias = "road")]
     Road,
     /// Hybrid or City
     ///
     /// A bicycle made mostly for city riding or casual riding on roads and paths with good surfaces.
     #[default]
-    #[serde(rename = "hybrid")]
+    #[serde(rename = "Hybrid", alias = "hybrid")]
     Hybrid,
     /// Cross
     ///
     /// A cyclo-cross bicycle, which is similar to a road bicycle but with wider tires suitable to rougher surfaces.
-    #[serde(rename = "cross")]
+    #[serde(rename = "Cross", alias = "cross")]
     Cross,
     /// Mountain
     ///
     /// A mountain bicycle suitable for most surfaces but generally heavier and slower on paved surfaces.
-    #[serde(rename = "mountain")]
+    #[serde(rename = "Mountain", alias = "mountain")]
     Mountain,
 }
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct BicycleCostingOptions {
+struct BicycleCostingOptionsInner {
     bicycle_type: Option<BicycleType>,
     cycling_speed: Option<f32>,
     use_roads: Option<f32>,
@@ -45,6 +45,11 @@ pub struct BicycleCostingOptions {
     country_crossing_penalty: Option<f32>,
     service_penalty: Option<f32>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct BicycleCostingOptions {
+    bicycle: BicycleCostingOptionsInner,
+}
 impl BicycleCostingOptions {
     #[must_use]
     pub fn builder() -> Self {
@@ -57,7 +62,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: [`BicycleType::Hybrid`]
     pub fn bicycle_type(mut self, bicycle_type: BicycleType) -> Self {
-        self.bicycle_type = Some(bicycle_type);
+        self.bicycle.bicycle_type = Some(bicycle_type);
         self
     }
 
@@ -74,7 +79,7 @@ impl BicycleCostingOptions {
     /// - [`BicycleType::Hybrid`] = 18 KPH (11.5 MPH), and
     /// - [`BicycleType::Mountain`] = 16 KPH (10 MPH).
     pub fn cycling_speed(mut self, speed: f32) -> Self {
-        self.cycling_speed = Some(speed);
+        self.bicycle.cycling_speed = Some(speed);
         self
     }
 
@@ -89,7 +94,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `0.5`
     pub fn use_roads(mut self, willingness: f32) -> Self {
-        self.use_roads = Some(willingness);
+        self.bicycle.use_roads = Some(willingness);
         self
     }
 
@@ -107,7 +112,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `0.5`
     pub fn use_hills(mut self, willingness: f32) -> Self {
-        self.use_hills = Some(willingness);
+        self.bicycle.use_hills = Some(willingness);
         self
     }
 
@@ -122,7 +127,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `0.5`
     pub fn use_ferry(mut self, willingness: f32) -> Self {
-        self.use_ferry = Some(willingness);
+        self.bicycle.use_ferry = Some(willingness);
         self
     }
 
@@ -137,7 +142,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `0.5`
     pub fn use_living_streets(mut self, willingness: f32) -> Self {
-        self.use_living_streets = Some(willingness);
+        self.bicycle.use_living_streets = Some(willingness);
         self
     }
 
@@ -153,7 +158,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `0.25`
     pub fn avoid_bad_surfaces(mut self, willingness: f32) -> Self {
-        self.avoid_bad_surfaces = Some(willingness);
+        self.bicycle.avoid_bad_surfaces = Some(willingness);
         self
     }
 
@@ -164,7 +169,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `120` seconds
     pub fn bss_return_cost(mut self, cost: f32) -> Self {
-        self.bss_return_cost = Some(cost);
+        self.bicycle.bss_return_cost = Some(cost);
         self
     }
 
@@ -173,7 +178,7 @@ impl BicycleCostingOptions {
     /// It is meant to describe the potential effort to return a rental bike.
     /// This value won't be displayed and used only inside the algorithm.
     pub fn bss_return_penalty(mut self, penalty: f32) -> Self {
-        self.bss_return_penalty = Some(penalty);
+        self.bicycle.bss_return_penalty = Some(penalty);
         self
     }
 
@@ -185,7 +190,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `false`.
     pub fn only_consider_quasi_shortest(mut self) -> Self {
-        self.shortest = Some(true);
+        self.bicycle.shortest = Some(true);
         self
     }
 
@@ -197,7 +202,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `5` seconds
     pub fn maneuver_penalty(mut self, penalty: f32) -> Self {
-        self.maneuver_penalty = Some(penalty);
+        self.bicycle.maneuver_penalty = Some(penalty);
         self
     }
 
@@ -207,7 +212,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `30` seconds
     pub fn gate_cost(mut self, cost: f32) -> Self {
-        self.gate_cost = Some(cost);
+        self.bicycle.gate_cost = Some(cost);
         self
     }
 
@@ -215,7 +220,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `300` seconds
     pub fn gate_penalty(mut self, penalty: f32) -> Self {
-        self.gate_penalty = Some(penalty);
+        self.bicycle.gate_penalty = Some(penalty);
         self
     }
 
@@ -225,7 +230,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `600` seconds
     pub fn country_crossing_cost(mut self, cost: f32) -> Self {
-        self.country_crossing_cost = Some(cost);
+        self.bicycle.country_crossing_cost = Some(cost);
         self
     }
 
@@ -235,7 +240,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `0`
     pub fn country_crossing_penalty(mut self, penalty: f32) -> Self {
-        self.country_crossing_penalty = Some(penalty);
+        self.bicycle.country_crossing_penalty = Some(penalty);
         self
     }
 
@@ -243,7 +248,7 @@ impl BicycleCostingOptions {
     ///
     /// Default: `0` for trucks and `15` for cars, buses, motor scooters and motorcycles.
     pub fn service_penalty(mut self, penalty: f32) -> Self {
-        self.service_penalty = Some(penalty);
+        self.bicycle.service_penalty = Some(penalty);
         self
     }
 }
@@ -255,7 +260,7 @@ mod test {
     fn serialisation() {
         assert_eq!(
             serde_json::to_value(BicycleCostingOptions::default()).unwrap(),
-            serde_json::json!({})
+            serde_json::json!({"bicycle":{}})
         );
     }
 }

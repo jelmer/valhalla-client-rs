@@ -1,10 +1,10 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default)]
 pub struct MultimodalCostingOptions {
-    pedestrian: Option<super::pedestrian::PedestrianCostingOptions>,
-    transit: Option<super::transit::TransitCostingOptions>,
+    pedestrian: Option<super::pedestrian::PedestrianCostingOptionsInner>,
+    transit: Option<super::transit::TransitCostingOptionsInner>,
 }
 impl MultimodalCostingOptions {
     #[must_use]
@@ -15,14 +15,14 @@ impl MultimodalCostingOptions {
     ///
     /// See [`super::transit::TransitCostingOptions`] for further details on options
     pub fn transit(mut self, transit: super::transit::TransitCostingOptions) -> Self {
-        self.transit = Some(transit);
+        self.transit = Some(transit.transit);
         self
     }
     /// Allows configuration of the Pedestrian Costing options
     ///
     /// See [`super::pedestrian::PedestrianCostingOptions`] for further details on options
     pub fn pedestrian(mut self, pedestrian: super::pedestrian::PedestrianCostingOptions) -> Self {
-        self.pedestrian = Some(pedestrian);
+        self.pedestrian = Some(pedestrian.pedestrian);
         self
     }
 }

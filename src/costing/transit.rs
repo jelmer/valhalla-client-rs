@@ -2,11 +2,16 @@ use serde::{Deserialize, Serialize};
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct TransitCostingOptions {
+pub(crate) struct TransitCostingOptionsInner {
     use_bus: Option<f32>,
     use_rail: Option<f32>,
     use_transfers: Option<f32>,
     filters: Option<Filters>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct TransitCostingOptions {
+    pub(crate) transit: TransitCostingOptionsInner,
 }
 impl TransitCostingOptions {
     #[must_use]
@@ -19,7 +24,7 @@ impl TransitCostingOptions {
     /// - `0` (try to avoid buses) to
     /// - `1` (strong preference for riding buses).
     pub fn use_bus(mut self, use_bus: f32) -> Self {
-        self.use_bus = Some(use_bus);
+        self.transit.use_bus = Some(use_bus);
         self
     }
     /// User's desire to use rail/subway/metro.
@@ -28,7 +33,7 @@ impl TransitCostingOptions {
     /// - `0` (try to avoid rail) to
     /// - `1` (strong preference for riding rail).
     pub fn use_rail(mut self, use_rail: f32) -> Self {
-        self.use_rail = Some(use_rail);
+        self.transit.use_rail = Some(use_rail);
         self
     }
     /// User's desire to favor transfers.
@@ -37,7 +42,7 @@ impl TransitCostingOptions {
     /// - `0` (try to avoid transfers) to
     /// - `1` (totally comfortable with transfers).
     pub fn use_transfers(mut self, use_transfers: f32) -> Self {
-        self.use_transfers = Some(use_transfers);
+        self.transit.use_transfers = Some(use_transfers);
         self
     }
     /// Sets a filter for one or more ~~`stops`~~ (TODO: need to re-enable)
@@ -62,10 +67,10 @@ impl TransitCostingOptions {
             ids: ids.into_iter().map(|s| s.to_string()).collect(),
             action,
         };
-        if let Some(ref mut filters) = self.filters {
+        if let Some(ref mut filters) = self.transit.filters {
             filters.stops = Some(new_filter);
         } else {
-            self.filters = Some(Filters {
+            self.transit.filters = Some(Filters {
                 stops: Some(new_filter),
                 ..Default::default()
             });
@@ -93,10 +98,10 @@ impl TransitCostingOptions {
             ids: ids.into_iter().map(|s| s.to_string()).collect(),
             action,
         };
-        if let Some(ref mut filters) = self.filters {
+        if let Some(ref mut filters) = self.transit.filters {
             filters.routes = Some(new_filter);
         } else {
-            self.filters = Some(Filters {
+            self.transit.filters = Some(Filters {
                 routes: Some(new_filter),
                 ..Default::default()
             });
@@ -124,10 +129,10 @@ impl TransitCostingOptions {
             ids: ids.into_iter().map(|s| s.to_string()).collect(),
             action,
         };
-        if let Some(ref mut filters) = self.filters {
+        if let Some(ref mut filters) = self.transit.filters {
             filters.operators = Some(new_filter);
         } else {
-            self.filters = Some(Filters {
+            self.transit.filters = Some(Filters {
                 operators: Some(new_filter),
                 ..Default::default()
             });
@@ -166,7 +171,7 @@ mod test {
     fn serialisation() {
         assert_eq!(
             serde_json::to_value(TransitCostingOptions::default()).unwrap(),
-            serde_json::json!({})
+            serde_json::json!({"transit":{}})
         );
     }
 }

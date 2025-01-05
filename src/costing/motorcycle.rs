@@ -1,11 +1,7 @@
 use serde::{Deserialize, Serialize};
-
-/// By default, motorcycle costing will default to higher class roads.
-/// The costing model recognizes factors unique to motorcycle travel and offers options for tuning
-/// motorcycle routes.
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct MotorcycleCostingOptions {
+struct MotorcycleCostingOptionsInner {
     maneuver_penalty: Option<f32>,
     gate_cost: Option<f32>,
     gate_penalty: Option<f32>,
@@ -46,6 +42,14 @@ pub struct MotorcycleCostingOptions {
     // -- ↓ motorcycle only ↓ --
     use_trails: Option<f32>,
 }
+
+/// By default, motorcycle costing will default to higher class roads.
+/// The costing model recognizes factors unique to motorcycle travel and offers options for tuning
+/// motorcycle routes.
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct MotorcycleCostingOptions {
+    motorcycle: MotorcycleCostingOptionsInner,
+}
 impl MotorcycleCostingOptions {
     #[must_use]
     pub fn builder() -> Self {
@@ -59,7 +63,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `30` seconds
     pub fn gate_cost(mut self, gate_cost: f32) -> Self {
-        self.gate_cost = Some(gate_cost);
+        self.motorcycle.gate_cost = Some(gate_cost);
         self
     }
     /// A penalty applied when a [gate](https://wiki.openstreetmap.org/wiki/Tag:barrier%3Dgate) with
@@ -67,7 +71,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `300` seconds
     pub fn gate_penalty(mut self, gate_penalty: f32) -> Self {
-        self.gate_penalty = Some(gate_penalty);
+        self.motorcycle.gate_penalty = Some(gate_penalty);
         self
     }
     /// A penalty applied when a [gate](https://wiki.openstreetmap.org/wiki/Tag:barrier%3Dgate) or
@@ -76,13 +80,13 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `450` seconds
     pub fn private_access_penalty(mut self, private_access_penalty: f32) -> Self {
-        self.private_access_penalty = Some(private_access_penalty);
+        self.motorcycle.private_access_penalty = Some(private_access_penalty);
         self
     }
     /// A penalty applied when entering a road which is only allowed to enter if necessary to reach
     /// the [destination](https://wiki.openstreetmap.org/wiki/Tag:vehicle%3Ddestination).
     pub fn destination_only_penalty(mut self, destination_only_penalty: f32) -> Self {
-        self.destination_only_penalty = Some(destination_only_penalty);
+        self.motorcycle.destination_only_penalty = Some(destination_only_penalty);
         self
     }
     /// A cost applied when a [toll booth](http://wiki.openstreetmap.org/wiki/Tag:barrier%3Dtoll_booth)
@@ -92,7 +96,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `15` seconds
     pub fn toll_booth_cost(mut self, toll_booth_cost: f32) -> Self {
-        self.toll_booth_cost = Some(toll_booth_cost);
+        self.motorcycle.toll_booth_cost = Some(toll_booth_cost);
         self
     }
     /// A penalty applied to the cost when a
@@ -102,7 +106,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `0`
     pub fn toll_booth_penalty(mut self, toll_booth_penalty: f32) -> Self {
-        self.toll_booth_penalty = Some(toll_booth_penalty);
+        self.motorcycle.toll_booth_penalty = Some(toll_booth_penalty);
         self
     }
     /// A cost applied when entering a ferry.
@@ -111,7 +115,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `300` seconds (5 minutes)
     pub fn ferry_cost(mut self, ferry_cost: f32) -> Self {
-        self.ferry_cost = Some(ferry_cost);
+        self.motorcycle.ferry_cost = Some(ferry_cost);
         self
     }
     /// This value indicates the willingness to take ferries.
@@ -126,7 +130,7 @@ impl MotorcycleCostingOptions {
     pub fn use_ferry(mut self, use_ferry: f32) -> Self {
         debug_assert!(use_ferry >= 0.0);
         debug_assert!(use_ferry <= 1.0);
-        self.use_ferry = Some(use_ferry);
+        self.motorcycle.use_ferry = Some(use_ferry);
         self
     }
     /// This value indicates the willingness to take highways.
@@ -141,7 +145,7 @@ impl MotorcycleCostingOptions {
     pub fn use_highways(mut self, use_highways: f32) -> Self {
         debug_assert!(use_highways >= 0.0);
         debug_assert!(use_highways <= 1.0);
-        self.use_highways = Some(use_highways);
+        self.motorcycle.use_highways = Some(use_highways);
         self
     }
     /// This value indicates the willingness to take roads with tolls.
@@ -156,7 +160,7 @@ impl MotorcycleCostingOptions {
     pub fn use_tolls(mut self, use_tolls: f32) -> Self {
         debug_assert!(use_tolls >= 0.0);
         debug_assert!(use_tolls <= 1.0);
-        self.use_tolls = Some(use_tolls);
+        self.motorcycle.use_tolls = Some(use_tolls);
         self
     }
     /// This value indicates the willingness to take living streets.
@@ -173,7 +177,7 @@ impl MotorcycleCostingOptions {
     pub fn use_living_streets(mut self, use_living_streets: f32) -> Self {
         debug_assert!(use_living_streets >= 0.0);
         debug_assert!(use_living_streets <= 1.0);
-        self.use_living_streets = Some(use_living_streets);
+        self.motorcycle.use_living_streets = Some(use_living_streets);
         self
     }
     /// This value indicates the willingness to take track roads.
@@ -190,7 +194,7 @@ impl MotorcycleCostingOptions {
     pub fn use_tracks(mut self, use_tracks: f32) -> Self {
         debug_assert!(use_tracks >= 0.0);
         debug_assert!(use_tracks <= 1.0);
-        self.use_tracks = Some(use_tracks);
+        self.motorcycle.use_tracks = Some(use_tracks);
         self
     }
     /// A penalty applied for transition to generic service road.
@@ -199,14 +203,14 @@ impl MotorcycleCostingOptions {
     /// - `0` trucks and
     /// - `15` for cars, buses, motor scooters and motorcycles.
     pub fn service_penalty(mut self, service_penalty: f32) -> Self {
-        self.service_penalty = Some(service_penalty);
+        self.motorcycle.service_penalty = Some(service_penalty);
         self
     }
     /// A factor that modifies (multiplies) the cost when generic service roads are encountered.
     ///
     /// Default: `1`
     pub fn service_factor(mut self, service_factor: f32) -> Self {
-        self.service_factor = Some(service_factor);
+        self.motorcycle.service_factor = Some(service_factor);
         self
     }
     /// A cost applied when encountering an international border.
@@ -215,7 +219,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `600` seconds
     pub fn country_crossing_cost(mut self, country_crossing_cost: f32) -> Self {
-        self.country_crossing_cost = Some(country_crossing_cost);
+        self.motorcycle.country_crossing_cost = Some(country_crossing_cost);
         self
     }
     /// A penalty applied for a country crossing.
@@ -224,7 +228,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `0`
     pub fn country_crossing_penalty(mut self, country_crossing_penalty: f32) -> Self {
-        self.country_crossing_penalty = Some(country_crossing_penalty);
+        self.motorcycle.country_crossing_penalty = Some(country_crossing_penalty);
         self
     }
     /// Changes the metric to quasi-shortest, i.e. **purely distance-based costing**.
@@ -235,7 +239,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `false`
     pub fn only_consider_quasi_shortest(mut self) -> Self {
-        self.shortest = Some(true);
+        self.motorcycle.shortest = Some(true);
         self
     }
 
@@ -250,7 +254,7 @@ impl MotorcycleCostingOptions {
     pub fn use_distance(mut self, use_distance: f32) -> Self {
         debug_assert!(use_distance >= 0.0);
         debug_assert!(use_distance <= 1.0);
-        self.use_distance = Some(use_distance);
+        self.motorcycle.use_distance = Some(use_distance);
         self
     }
     /// Disable hierarchies to calculate the actual optimal route.
@@ -260,7 +264,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `false`
     pub fn disable_hierarchy_pruning(mut self) -> Self {
-        self.disable_hierarchy_pruning = Some(true);
+        self.motorcycle.disable_hierarchy_pruning = Some(true);
         self
     }
     /// Top speed the vehicle can go.
@@ -274,7 +278,7 @@ impl MotorcycleCostingOptions {
     pub fn top_speed(mut self, top_speed: f32) -> Self {
         debug_assert!(top_speed >= 10.0);
         debug_assert!(top_speed <= 252.0);
-        self.top_speed = Some(top_speed);
+        self.motorcycle.top_speed = Some(top_speed);
         self
     }
     /// Fixed speed the vehicle can go. Used to override the calculated speed.
@@ -287,7 +291,7 @@ impl MotorcycleCostingOptions {
     pub fn fixed_speed(mut self, fixed_speed: u32) -> Self {
         debug_assert!(fixed_speed >= 1);
         debug_assert!(fixed_speed <= 252);
-        self.fixed_speed = Some(fixed_speed);
+        self.motorcycle.fixed_speed = Some(fixed_speed);
         self
     }
     /// A factor that penalizes the cost when traversing a closed edge
@@ -304,7 +308,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `9.0`
     pub fn closure_factor(mut self, closure_factor: f32) -> Self {
-        self.closure_factor = Some(closure_factor);
+        self.motorcycle.closure_factor = Some(closure_factor);
         self
     }
     /// If set ignores all closures, marked due to live traffic closures, during routing.
@@ -312,7 +316,7 @@ impl MotorcycleCostingOptions {
     /// **Note:** This option cannot be set if `location.search_filter.exclude_closures` is also
     /// specified in the request and will return an error if it is
     pub fn ignore_closures(mut self) -> Self {
-        self.ignore_closures = Some(true);
+        self.motorcycle.ignore_closures = Some(true);
         self
     }
     /// If set, ignores any restrictions (e.g. turn/dimensional/conditional restrictions).
@@ -321,7 +325,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `false`
     pub fn ignore_restrictions(mut self) -> Self {
-        self.ignore_restrictions = Some(true);
+        self.motorcycle.ignore_restrictions = Some(true);
         self
     }
     /// If set, ignores one-way restrictions.
@@ -331,7 +335,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `false`
     pub fn ignore_oneways(mut self) -> Self {
-        self.ignore_oneways = Some(true);
+        self.motorcycle.ignore_oneways = Some(true);
         self
     }
     /// Similar to [`Self::ignore_restrictions`], but will respect restrictions that impact vehicle safety,
@@ -339,7 +343,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `false`
     pub fn ignore_non_vehicular_restrictions(mut self) -> Self {
-        self.ignore_non_vehicular_restrictions = Some(true);
+        self.motorcycle.ignore_non_vehicular_restrictions = Some(true);
         self
     }
     /// Ignore mode-specific access tags.
@@ -348,7 +352,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default `false`
     pub fn ignore_access(mut self) -> Self {
-        self.ignore_access = Some(true);
+        self.motorcycle.ignore_access = Some(true);
         self
     }
     /// Will determine which speed sources are used, if available.
@@ -363,9 +367,9 @@ impl MotorcycleCostingOptions {
     /// Default: [`UsedSpeedSources::All`] sources (again, only if available)
     pub fn speed_types(mut self, speed_types: UsedSpeedSources) -> Self {
         if speed_types == UsedSpeedSources::All {
-            self.speed_types = None
+            self.motorcycle.speed_types = None
         } else {
-            self.speed_types = Some(speed_types);
+            self.motorcycle.speed_types = Some(speed_types);
         }
         self
     }
@@ -376,7 +380,7 @@ impl MotorcycleCostingOptions {
     /// - `car`/`bus`/`taxi`: `1.9` and
     /// - `truck`: `4.11`
     pub fn height(mut self, height: f32) -> Self {
-        self.height = Some(height);
+        self.motorcycle.height = Some(height);
         self
     }
     /// The width of the vehicle (in meters).
@@ -385,7 +389,7 @@ impl MotorcycleCostingOptions {
     /// - `car`/`bus`/`taxi`: `1.6` and
     /// - `truck`: `2.6`
     pub fn width(mut self, width: f32) -> Self {
-        self.width = Some(width);
+        self.motorcycle.width = Some(width);
         self
     }
     /// Exclude unpaved roads.
@@ -396,35 +400,35 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `false`.
     pub fn exclude_unpaved(mut self) -> Self {
-        self.exclude_unpaved = Some(true);
+        self.motorcycle.exclude_unpaved = Some(true);
         self
     }
     /// Desire to avoid routes with cash-only tolls.
     ///
     /// Default: `false`.
     pub fn exclude_cash_only_tolls(mut self, exclude_cash_only_tolls: bool) -> Self {
-        self.exclude_cash_only_tolls = Some(exclude_cash_only_tolls);
+        self.motorcycle.exclude_cash_only_tolls = Some(exclude_cash_only_tolls);
         self
     }
     /// Include HOV roads with a 2-occupant requirement in the route when advantageous.
     ///
     /// Default: `false`.
     pub fn include_hov2(mut self, include_hov2: bool) -> Self {
-        self.include_hov2 = Some(include_hov2);
+        self.motorcycle.include_hov2 = Some(include_hov2);
         self
     }
     /// Include HOV roads with a 3-occupant requirement in the route when advantageous.
     ///
     /// Default: `false`.
     pub fn include_hov3(mut self, include_hov3: bool) -> Self {
-        self.include_hov3 = Some(include_hov3);
+        self.motorcycle.include_hov3 = Some(include_hov3);
         self
     }
     /// Include tolled HOV roads which require the driver to pay a toll if the occupant requirement isn't met.
     ///
     /// Default: `false`.
     pub fn include_hot(mut self, include_hot: bool) -> Self {
-        self.include_hot = Some(include_hot);
+        self.motorcycle.include_hot = Some(include_hot);
         self
     }
     /// Desire for adventure in a routes.
@@ -435,7 +439,7 @@ impl MotorcycleCostingOptions {
     ///
     /// Default: `0.0`.
     pub fn use_trails(mut self, use_trails: f32) -> Self {
-        self.use_trails = Some(use_trails);
+        self.motorcycle.use_trails = Some(use_trails);
         self
     }
 }
@@ -461,7 +465,7 @@ mod test {
     fn serialisation() {
         assert_eq!(
             serde_json::to_value(MotorcycleCostingOptions::default()).unwrap(),
-            serde_json::json!({})
+            serde_json::json!({"motorcycle":{}})
         );
     }
 }
