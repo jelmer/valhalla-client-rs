@@ -970,6 +970,7 @@ impl Location {
     }
 }
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Location {
     #[serde(rename = "lat")]
