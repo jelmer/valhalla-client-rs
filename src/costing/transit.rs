@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub(crate) struct TransitCostingOptionsInner {
     use_bus: Option<f32>,
     use_rail: Option<f32>,
@@ -9,7 +9,7 @@ pub(crate) struct TransitCostingOptionsInner {
     filters: Option<Filters>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct TransitCostingOptions {
     pub(crate) transit: TransitCostingOptionsInner,
 }
@@ -141,7 +141,7 @@ impl TransitCostingOptions {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
+#[derive(Serialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Action {
     /// Include only the `ids` listed in the filter
     #[default]
@@ -151,14 +151,14 @@ pub enum Action {
 }
 
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 struct Filters {
     routes: Option<Filter>,
     operators: Option<Filter>,
     stops: Option<Filter>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq, Eq)]
 struct Filter {
     ids: Vec<String>,
     action: Action,

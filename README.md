@@ -9,7 +9,7 @@ These APIs are implemented:
 - [ ] [Isochrone & Isodistance](https://valhalla.github.io/valhalla/api/isochrone/api-reference/)
 - [ ] [Map Matching](https://valhalla.github.io/valhalla/api/map-matching/api-reference/)
 - [ ] [Valhalla locate](https://valhalla.github.io/valhalla/api/locate/api-reference/)
-- [ ] [Elevation](https://valhalla.github.io/valhalla/api/elevation/api-reference/)
+- [x] [Elevation](https://valhalla.github.io/valhalla/api/elevation/api-reference/)
 - [ ] [Expansion](https://valhalla.github.io/valhalla/api/expansion/api-reference/)
 - [x] [Status](https://valhalla.github.io/valhalla/api/status/api-reference/)
 

@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 struct AutoCostingOptionsInner {
     maneuver_penalty: Option<f32>,
     gate_cost: Option<f32>,
@@ -42,7 +42,7 @@ struct AutoCostingOptionsInner {
     include_hot: Option<bool>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct AutoCostingOptions {
     auto: AutoCostingOptionsInner,
 }
@@ -429,7 +429,7 @@ impl AutoCostingOptions {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Serialize, Debug, Clone, Copy, Eq, PartialEq)]
 pub enum UsedSpeedSources {
     #[serde(rename = "all")]
     All,

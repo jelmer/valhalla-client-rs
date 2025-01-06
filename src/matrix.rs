@@ -190,7 +190,7 @@ impl Location {
 /// [`Location`] which was configured in the input
 ///
 /// Present only in `verbose` mode. Verbosity can be set via [`Manifest::verbose_output`]
-#[derive(Serialize, Deserialize, Default, Clone, Copy, PartialEq, Debug)]
+#[derive(Deserialize, Default, Clone, Copy, PartialEq, Debug)]
 pub struct VerboseLocation {
     /// Latitude as defined in [`super::Coordinate`]
     pub lat: f32,

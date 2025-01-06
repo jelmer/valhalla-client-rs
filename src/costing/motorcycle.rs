@@ -1,6 +1,7 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
+
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 struct MotorcycleCostingOptionsInner {
     maneuver_penalty: Option<f32>,
     gate_cost: Option<f32>,
@@ -46,7 +47,7 @@ struct MotorcycleCostingOptionsInner {
 /// By default, motorcycle costing will default to higher class roads.
 /// The costing model recognizes factors unique to motorcycle travel and offers options for tuning
 /// motorcycle routes.
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct MotorcycleCostingOptions {
     motorcycle: MotorcycleCostingOptionsInner,
 }
@@ -444,7 +445,7 @@ impl MotorcycleCostingOptions {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UsedSpeedSources {
     #[serde(rename = "all")]
     All,

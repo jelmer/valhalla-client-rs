@@ -67,7 +67,7 @@ pub struct Summary {
     pub max_lon: f64,
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TravelMode {
     #[serde(rename = "drive")]
     Drive,
@@ -79,7 +79,7 @@ pub enum TravelMode {
     Transit,
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CarTravelType {
     #[serde(rename = "car")]
     Car,
@@ -91,13 +91,13 @@ pub enum PedestrianTravelType {
     Foot,
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BicycleTravelType {
     #[serde(rename = "road")]
     Road,
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TransitTravelType {
     #[serde(rename = "tram")]
     Tram,
@@ -117,7 +117,7 @@ pub enum TransitTravelType {
     Funicular,
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BssManeuverType {
     #[serde(rename = "NoneAction")]
     NoneAction,
@@ -150,7 +150,7 @@ impl From<&Leg> for gpx::TrackSegment {
     }
 }
 
-#[derive(serde_repr::Deserialize_repr, Debug, Clone, Copy)]
+#[derive(serde_repr::Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i8)]
 pub enum ManeuverType {
     None = 0,
@@ -346,7 +346,7 @@ pub struct TransitInfo {
     pub transit_stops: Vec<TransitStop>,
 }
 
-#[derive(serde_repr::Deserialize_repr, Debug, Clone, Copy)]
+#[derive(serde_repr::Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TransitStopType {
     /// Simple stop.
@@ -378,7 +378,7 @@ pub struct TransitStop {
     pub lon: f64,
 }
 
-#[derive(Serialize, Default, Debug, Clone, Copy)]
+#[derive(Serialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DirectionsType {
     /// indicating no maneuvers or instructions should be returned.
     #[serde(rename = "none")]
@@ -633,7 +633,7 @@ impl Manifest {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LocationType {
     #[default]
     #[serde(rename = "break")]
@@ -649,7 +649,7 @@ pub enum LocationType {
     BreakThrough,
 }
 
-#[derive(Serialize, Deserialize, Default, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Side {
     #[serde(rename = "same")]
     Same,
