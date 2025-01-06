@@ -5,6 +5,7 @@ pub mod costing;
 pub mod matrix;
 pub mod route;
 pub mod shapes;
+pub mod status;
 
 use log::debug;
 use serde::{Deserialize, Serialize};
@@ -197,6 +198,48 @@ impl Valhalla {
         response.error_for_status_ref().map_err(Error::Reqwest)?;
         let text = response.text().map_err(Error::Reqwest)?;
         let response: matrix::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
+        Ok(response)
+    }
+    /// Make a time-distance matrix routing request
+    ///
+    /// This can be used as a health endpoint for the HTTP API or to toggle features in a frontend.
+    ///
+    /// See <https://valhalla.github.io/valhalla/api/status/api-reference/> for details
+    ///
+    /// # Example:
+    /// ```rust,no_run
+    /// use valhalla_client::Valhalla;
+    /// use valhalla_client::status::Manifest;
+    ///
+    /// let request = Manifest::builder()
+    ///   .verbose_output(false);
+    /// let response = Valhalla::default()
+    ///   .status(request).unwrap();
+    /// # assert!(response.version >= semver::Version::parse("3.1.4").unwrap());
+    /// # assert!(response.tileset_last_modified.timestamp() > 0);
+    /// # assert!(response.verbose.is_none());
+    /// ```
+    pub fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
+        debug!(
+            "Sending routing request: {}",
+            serde_json::to_string(&manifest).unwrap()
+        );
+        let mut url = self.base_url.clone();
+        url.path_segments_mut()
+            .expect("base_url is not a valid base url")
+            .push("status");
+        let response = self
+            .client
+            .post(url)
+            .json(&manifest)
+            .send()
+            .map_err(Error::Reqwest)?;
+        if response.status().is_client_error() {
+            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
+        }
+        response.error_for_status_ref().map_err(Error::Reqwest)?;
+        let text = response.text().map_err(Error::Reqwest)?;
+        let response: status::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response)
     }
 }

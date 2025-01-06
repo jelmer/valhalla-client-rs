@@ -11,7 +11,7 @@ These APIs are implemented:
 - [ ] [Valhalla locate](https://valhalla.github.io/valhalla/api/locate/api-reference/)
 - [ ] [Elevation](https://valhalla.github.io/valhalla/api/elevation/api-reference/)
 - [ ] [Expansion](https://valhalla.github.io/valhalla/api/expansion/api-reference/)
-- [ ] [Status](https://valhalla.github.io/valhalla/api/status/api-reference/)
+- [x] [Status](https://valhalla.github.io/valhalla/api/status/api-reference/)
 
 ## Examples
 
