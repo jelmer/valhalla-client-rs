@@ -7,7 +7,15 @@ pub mod pedestrian;
 pub mod transit;
 pub mod truck;
 
+pub use auto::AutoCostingOptions;
+pub use bicycle::BicycleCostingOptions;
+pub use motor_scooter::MotorScooterCostingOptions;
+pub use motorcycle::MotorcycleCostingOptions;
+pub use multimodal::MultimodalCostingOptions;
+pub use pedestrian::PedestrianCostingOptions;
 use serde::Serialize;
+pub use transit::TransitCostingOptions;
+pub use truck::TruckCostingOptions;
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(tag = "costing", content = "costing_options")]
@@ -21,25 +29,25 @@ pub enum Costing {
     /// Routes also tend to favor highways and higher classification roads,
     /// such as motorways and trunks.
     #[serde(rename = "auto")]
-    Auto(auto::AutoCostingOptions),
+    Auto(AutoCostingOptions),
 
     /// Standard costing for travel by bicycle.
     ///
     /// Has a slight preference for using cycleways or roads with bicycle lanes.
     /// Bicycle routes follow regular roads when needed, but avoid roads without bicycle access.
     #[serde(rename = "bicycle")]
-    Bicycle(bicycle::BicycleCostingOptions),
+    Bicycle(BicycleCostingOptions),
 
     /// Standard costing for bus routes.
     ///
     /// Bus costing inherits the [`Costing::Auto`] behaviors, but checks for bus access on the roads.
     #[serde(rename = "bus")]
-    Bus(auto::AutoCostingOptions),
+    Bus(AutoCostingOptions),
     /// A combination of pedestrian and bicycle.
     ///
     /// Use bike share station (indicated by [`amenity:bicycle_rental`](https://wiki.openstreetmap.org/wiki/Tag:amenity%3Dbicycle_rental)) to change the travel mode
     #[serde(rename = "bikeshare")]
-    Bikeshare(bicycle::BicycleCostingOptions),
+    Bikeshare(BicycleCostingOptions),
     /// Standard costing for trucks.
     ///
     /// Truck costing inherits the [`Costing::Auto`] behaviors, but checks for:
@@ -47,39 +55,39 @@ pub enum Costing {
     /// - width/height restrictions and
     /// - weight limits
     #[serde(rename = "truck")]
-    Truck(truck::TruckCostingOptions),
+    Truck(TruckCostingOptions),
     /// Standard costing for taxi routes.
     ///
     /// Taxi costing inherits the [`Costing::Auto`] behaviors, but checks and favors
     /// taxi lane access on roads.
     #[serde(rename = "taxi")]
-    Taxi(auto::AutoCostingOptions),
+    Taxi(AutoCostingOptions),
     /// Standard costing for travel by motor scooter or moped.
     ///
     /// By default, this will avoid higher class roads unless the country overrides allows motor
     /// scooters on these roads. Motor scooter routes follow regular roads when needed,
     /// but avoid roads without motor_scooter, moped, or mofa access.
     #[serde(rename = "motor_scooter")]
-    MotorScooter(motor_scooter::MotorScooterCostingOptions),
+    MotorScooter(MotorScooterCostingOptions),
     /// Standard costing for travel by motorcycle.
     ///
     /// This costing model provides options to tune the route to take roadways (road touring) vs.
     /// tracks and trails (adventure motorcycling).
     #[serde(rename = "motorcycle")]
-    Motorcycle(motorcycle::MotorcycleCostingOptions),
+    Motorcycle(MotorcycleCostingOptions),
     /// Combines different modalities.
     ///
     /// **Currently supports pedestrian and transit.**
     /// In the future, multimodal will support a combination of all of the above.
     #[serde(rename = "multimodal")]
-    Multimodal(multimodal::MultimodalCostingOptions),
+    Multimodal(MultimodalCostingOptions),
     /// Standard walking route that excludes roads without pedestrian access.
     ///
     /// In general, pedestrian routes are the shortest distance with the following exceptions:
     /// - walkways and footpaths are slightly favored and
     /// - steps or stairs and alleys are slightly avoided
     #[serde(rename = "pedestrian")]
-    Pedestrian(pedestrian::PedestrianCostingOptions),
+    Pedestrian(PedestrianCostingOptions),
 }
 
 impl Default for Costing {

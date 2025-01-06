@@ -1,4 +1,5 @@
 use crate::costing;
+pub use crate::shapes::ShapePoint;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug, Clone)]
@@ -133,7 +134,7 @@ pub struct Leg {
     pub maneuvers: Vec<Maneuver>,
 
     #[serde(deserialize_with = "crate::shapes::deserialize_shape")]
-    pub shape: Vec<crate::shapes::ShapePoint>,
+    pub shape: Vec<ShapePoint>,
 }
 
 #[cfg(feature = "gpx")]
