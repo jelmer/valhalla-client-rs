@@ -299,9 +299,7 @@ impl Valhalla {
     /// # }
     /// ```
     pub async fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
-        let response = self
-            .do_request::<route::Manifest, route::Response>(manifest, "route", "route")
-            .await?;
+        let response: route::Response = self.do_request(manifest, "route", "route").await?;
         Ok(response.trip)
     }
 
@@ -350,12 +348,8 @@ impl Valhalla {
             "a matrix route needs at least one source specified"
         );
 
-        self.do_request::<matrix::Manifest, matrix::Response>(
-            manifest,
-            "sources_to_targets",
-            "matrix",
-        )
-        .await
+        self.do_request(manifest, "sources_to_targets", "matrix")
+            .await
     }
     /// Make an elevation request
     ///
@@ -399,8 +393,7 @@ impl Valhalla {
         &self,
         manifest: elevation::Manifest,
     ) -> Result<elevation::Response, Error> {
-        self.do_request::<elevation::Manifest, elevation::Response>(manifest, "height", "elevation")
-            .await
+        self.do_request(manifest, "height", "elevation").await
     }
     /// Make a status request
     ///
@@ -424,13 +417,12 @@ impl Valhalla {
     /// # }
     /// ```
     pub async fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
-        self.do_request::<status::Manifest, status::Response>(manifest, "status", "status")
-            .await
+        self.do_request(manifest, "status", "status").await
     }
 
-    async fn do_request<Req: serde::Serialize, Resp: for<'de> serde::Deserialize<'de>>(
+    async fn do_request<Resp: for<'de> serde::Deserialize<'de>>(
         &self,
-        manifest: Req,
+        manifest: impl serde::Serialize,
         path: &'static str,
         name: &'static str,
     ) -> Result<Resp, Error> {
