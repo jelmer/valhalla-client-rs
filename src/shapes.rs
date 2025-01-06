@@ -15,13 +15,19 @@ pub enum ShapeFormat {
 
 #[derive(Debug, Clone)]
 pub struct ShapePoint {
-    lon: f64,
-    lat: f64,
+    pub lon: f64,
+    pub lat: f64,
 }
 
 impl From<&ShapePoint> for geo_types::Point {
     fn from(p: &ShapePoint) -> Self {
         Self::new(p.lon, p.lat)
+    }
+}
+
+impl From<ShapePoint> for super::Coordinate {
+    fn from(p: ShapePoint) -> Self {
+        (p.lon as f32, p.lat as f32)
     }
 }
 
