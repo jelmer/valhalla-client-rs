@@ -8,7 +8,7 @@ pub mod route;
 pub mod shapes;
 pub mod status;
 
-use log::debug;
+use log::trace;
 use serde::{Deserialize, Serialize};
 
 /// A longitude, latitude coordinate in degrees
@@ -299,31 +299,12 @@ impl Valhalla {
     /// # }
     /// ```
     pub async fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("route");
         let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
-            .await
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(
-                response.json().await.map_err(Error::Reqwest)?,
-            ));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().await.map_err(Error::Reqwest)?;
-        let response: route::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
+            .do_request::<route::Manifest, route::Response>(manifest, "route", "route")
+            .await?;
         Ok(response.trip)
     }
+
     /// Make a time-distance matrix routing request
     ///
     /// See <https://valhalla.github.io/valhalla/api/matrix/api-reference> for details
@@ -369,30 +350,12 @@ impl Valhalla {
             "a matrix route needs at least one source specified"
         );
 
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("sources_to_targets");
-        let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
-            .await
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(
-                response.json().await.map_err(Error::Reqwest)?,
-            ));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().await.map_err(Error::Reqwest)?;
-        let response: matrix::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
-        Ok(response)
+        self.do_request::<matrix::Manifest, matrix::Response>(
+            manifest,
+            "sources_to_targets",
+            "matrix",
+        )
+        .await
     }
     /// Make an elevation request
     ///
@@ -436,30 +399,8 @@ impl Valhalla {
         &self,
         manifest: elevation::Manifest,
     ) -> Result<elevation::Response, Error> {
-        println!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("height");
-        let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
+        self.do_request::<elevation::Manifest, elevation::Response>(manifest, "height", "elevation")
             .await
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(
-                response.json().await.map_err(Error::Reqwest)?,
-            ));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().await.map_err(Error::Reqwest)?;
-        let response: elevation::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
-        Ok(response)
     }
     /// Make a status request
     ///
@@ -483,14 +424,24 @@ impl Valhalla {
     /// # }
     /// ```
     pub async fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
+        self.do_request::<status::Manifest, status::Response>(manifest, "status", "status")
+            .await
+    }
+
+    async fn do_request<Req: serde::Serialize, Resp: for<'de> serde::Deserialize<'de>>(
+        &self,
+        manifest: Req,
+        path: &'static str,
+        name: &'static str,
+    ) -> Result<Resp, Error> {
+        if log::log_enabled!(log::Level::Trace) {
+            let request = serde_json::to_string(&manifest).unwrap();
+            trace!("Sending {name} request: {request}");
+        }
         let mut url = self.base_url.clone();
         url.path_segments_mut()
             .expect("base_url is not a valid base url")
-            .push("status");
+            .push(path);
         let response = self
             .client
             .post(url)
@@ -505,7 +456,8 @@ impl Valhalla {
         }
         response.error_for_status_ref().map_err(Error::Reqwest)?;
         let text = response.text().await.map_err(Error::Reqwest)?;
-        let response: status::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
+        trace!("{name} responded: {text}");
+        let response: Resp = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response)
     }
 }
