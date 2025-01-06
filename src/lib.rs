@@ -88,19 +88,22 @@ pub struct RemoteError {
 #[cfg(feature = "blocking")]
 pub mod blocking {
     use crate::{matrix, route, status, Error, VALHALLA_PUBLIC_API_URL};
+    use std::sync::Arc;
 
+    #[derive(Debug, Clone)]
     pub struct Valhalla {
-        rt: tokio::runtime::Runtime,
+        runtime: Arc<tokio::runtime::Runtime>,
         client: super::Valhalla,
     }
     impl Valhalla {
         /// Create a sync [Valhalla](https://valhalla.github.io/valhalla/) client
         pub fn new(base_url: url::Url) -> Self {
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .enable_io()
+                .build()
+                .expect("tokio runtime can be created");
             Self {
-                rt: tokio::runtime::Builder::new_current_thread()
-                    .enable_io()
-                    .build()
-                    .expect("tokio runtime can be created"),
+                runtime: Arc::new(runtime),
                 client: super::Valhalla::new(base_url),
             }
         }
@@ -130,7 +133,7 @@ pub mod blocking {
         /// # assert_eq!(response.locations.len(), 2);
         /// ```
         pub fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
-            self.rt
+            self.runtime
                 .block_on(async move { self.client.route(manifest).await })
         }
         /// Make a time-distance matrix routing request
@@ -165,7 +168,7 @@ pub mod blocking {
         /// # };
         /// ```
         pub fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
-            self.rt
+            self.runtime
                 .block_on(async move { self.client.matrix(manifest).await })
         }
         /// Make a status request
@@ -188,7 +191,7 @@ pub mod blocking {
         /// # assert!(response.verbose.is_none());
         /// ```
         pub fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
-            self.rt
+            self.runtime
                 .block_on(async move { self.client.status(manifest).await })
         }
     }
@@ -203,6 +206,7 @@ pub mod blocking {
 }
 
 const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
+#[derive(Debug, Clone)]
 pub struct Valhalla {
     client: reqwest::Client,
     base_url: url::Url,
