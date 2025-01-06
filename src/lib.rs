@@ -96,7 +96,7 @@ pub struct RemoteError {
 
 #[cfg(feature = "blocking")]
 pub mod blocking {
-    use crate::{matrix, route, status, Error, VALHALLA_PUBLIC_API_URL};
+    use crate::{elevation, matrix, route, status, Error, VALHALLA_PUBLIC_API_URL};
     use std::sync::Arc;
 
     #[derive(Debug, Clone)]
@@ -216,7 +216,10 @@ pub mod blocking {
         /// # assert_eq!(response.y_coordinate, None);
         /// # assert_eq!(response.shape.map(|s|s.len()),Some(6));
         /// ```
-        pub fn elevation(&self, manifest: elevation::Manifest) -> Result<elevation::Response, Error> {
+        pub fn elevation(
+            &self,
+            manifest: elevation::Manifest,
+        ) -> Result<elevation::Response, Error> {
             self.runtime
                 .block_on(async move { self.client.elevation(manifest).await })
         }
@@ -429,7 +432,10 @@ impl Valhalla {
     /// # assert_eq!(response.shape.map(|s|s.len()),Some(6));
     /// # }
     /// ```
-    pub async fn elevation(&self, manifest: elevation::Manifest) -> Result<elevation::Response, Error> {
+    pub async fn elevation(
+        &self,
+        manifest: elevation::Manifest,
+    ) -> Result<elevation::Response, Error> {
         println!(
             "Sending routing request: {}",
             serde_json::to_string(&manifest).unwrap()
@@ -442,10 +448,13 @@ impl Valhalla {
             .client
             .post(url)
             .json(&manifest)
-            .send().await
+            .send()
+            .await
             .map_err(Error::Reqwest)?;
         if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().await.map_err(Error::Reqwest)?));
+            return Err(Error::RemoteError(
+                response.json().await.map_err(Error::Reqwest)?,
+            ));
         }
         response.error_for_status_ref().map_err(Error::Reqwest)?;
         let text = response.text().await.map_err(Error::Reqwest)?;
