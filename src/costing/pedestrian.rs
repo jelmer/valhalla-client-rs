@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct PedestrianCostingOptions {
+pub(crate) struct PedestrianCostingOptionsInner {
     walking_speed: Option<f32>,
     walkway_factor: Option<f32>,
     sidewalk_factor: Option<f32>,
@@ -27,6 +27,10 @@ pub struct PedestrianCostingOptions {
     r#type: Option<PedestrianType>,
     mode_factor: Option<f32>,
 }
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct PedestrianCostingOptions {
+    pub(crate) pedestrian: PedestrianCostingOptionsInner,
+}
 impl PedestrianCostingOptions {
     #[must_use]
     pub fn builder() -> Self {
@@ -41,7 +45,7 @@ impl PedestrianCostingOptions {
     pub fn walking_speed(mut self, walking_speed: f32) -> Self {
         debug_assert!(walking_speed >= 0.5);
         debug_assert!(walking_speed <= 25.0);
-        self.walking_speed = Some(walking_speed);
+        self.pedestrian.walking_speed = Some(walking_speed);
         self
     }
     /// A factor that modifies the cost when encountering roads classified as `footway`
@@ -52,7 +56,7 @@ impl PedestrianCostingOptions {
     ///
     /// Default: `1.0`
     pub fn walkway_factor(mut self, walkway_factor: f32) -> Self {
-        self.walkway_factor = Some(walkway_factor);
+        self.pedestrian.walkway_factor = Some(walkway_factor);
         self
     }
     /// A factor that modifies the cost when encountering roads with dedicated sidewalks.
@@ -61,7 +65,7 @@ impl PedestrianCostingOptions {
     ///
     /// Default: `1.0`
     pub fn sidewalk_factor(mut self, sidewalk_factor: f32) -> Self {
-        self.sidewalk_factor = Some(sidewalk_factor);
+        self.pedestrian.sidewalk_factor = Some(sidewalk_factor);
         self
     }
     /// A factor that modifies (multiplies) the cost when
@@ -71,7 +75,7 @@ impl PedestrianCostingOptions {
     ///
     /// Default: `2.0`
     pub fn alley_factor(mut self, alley_factor: f32) -> Self {
-        self.alley_factor = Some(alley_factor);
+        self.pedestrian.alley_factor = Some(alley_factor);
         self
     }
     /// A factor that modifies (multiplies) the cost when encountering a
@@ -82,7 +86,7 @@ impl PedestrianCostingOptions {
     ///
     /// Default: `5.0`
     pub fn driveway_factor(mut self, driveway_factor: f32) -> Self {
-        self.driveway_factor = Some(driveway_factor);
+        self.pedestrian.driveway_factor = Some(driveway_factor);
         self
     }
     /// A penalty in seconds added to each transition onto a path with
@@ -90,7 +94,7 @@ impl PedestrianCostingOptions {
     ///
     /// Higher values apply larger cost penalties to avoid paths that contain flights of steps
     pub fn step_penalty(mut self, step_penalty: f32) -> Self {
-        self.step_penalty = Some(step_penalty);
+        self.pedestrian.step_penalty = Some(step_penalty);
         self
     }
     /// Willingness to take ferries.
@@ -106,7 +110,7 @@ impl PedestrianCostingOptions {
     pub fn use_ferry(mut self, use_ferry: f32) -> Self {
         debug_assert!(use_ferry >= 0.0);
         debug_assert!(use_ferry <= 1.0);
-        self.use_ferry = Some(use_ferry);
+        self.pedestrian.use_ferry = Some(use_ferry);
         self
     }
     /// Willingness to take living streets.
@@ -122,7 +126,7 @@ impl PedestrianCostingOptions {
     pub fn use_living_streets(mut self, use_living_streets: f32) -> Self {
         debug_assert!(use_living_streets >= 0.0);
         debug_assert!(use_living_streets <= 1.0);
-        self.use_living_streets = Some(use_living_streets);
+        self.pedestrian.use_living_streets = Some(use_living_streets);
         self
     }
     /// Willingness to take track roads.
@@ -138,7 +142,7 @@ impl PedestrianCostingOptions {
     pub fn use_tracks(mut self, use_tracks: f32) -> Self {
         debug_assert!(use_tracks >= 0.0);
         debug_assert!(use_tracks <= 1.0);
-        self.use_tracks = Some(use_tracks);
+        self.pedestrian.use_tracks = Some(use_tracks);
         self
     }
     /// Desire to tackle hills in routes.
@@ -154,7 +158,7 @@ impl PedestrianCostingOptions {
     ///
     /// Default: `0.5`
     pub fn use_hills(mut self, use_hills: f32) -> Self {
-        self.use_hills = Some(use_hills);
+        self.pedestrian.use_hills = Some(use_hills);
         self
     }
 
@@ -170,27 +174,27 @@ impl PedestrianCostingOptions {
     pub fn use_lit(mut self, use_lit: f32) -> Self {
         debug_assert!(use_lit >= 0.0);
         debug_assert!(use_lit <= 1.0);
-        self.use_lit = Some(use_lit);
+        self.pedestrian.use_lit = Some(use_lit);
         self
     }
     /// A penalty applied for transition to generic service road.
     ///
     /// Default: `0`
     pub fn service_penalty(mut self, service_penalty: f32) -> Self {
-        self.service_penalty = Some(service_penalty);
+        self.pedestrian.service_penalty = Some(service_penalty);
         self
     }
     /// A factor that modifies (multiplies) the cost when generic service roads are encountered.
     ///
     /// Default: `1`
     pub fn service_factor(mut self, service_factor: f32) -> Self {
-        self.service_factor = Some(service_factor);
+        self.pedestrian.service_factor = Some(service_factor);
         self
     }
     /// A penalty applied when entering a road which is only allowed to enter if necessary to reach
     /// the [destination](https://wiki.openstreetmap.org/wiki/Tag:vehicle%3Ddestination)
     pub fn destination_only_penalty(mut self, destination_only_penalty: f32) -> Self {
-        self.destination_only_penalty = Some(destination_only_penalty);
+        self.pedestrian.destination_only_penalty = Some(destination_only_penalty);
         self
     }
     /// Maximum difficulty of hiking trails that is allowed.
@@ -204,7 +208,7 @@ impl PedestrianCostingOptions {
     pub fn max_hiking_difficulty(mut self, max_hiking_difficulty: f32) -> Self {
         debug_assert!(max_hiking_difficulty >= 0.0);
         debug_assert!(max_hiking_difficulty <= 6.0);
-        self.max_hiking_difficulty = Some(max_hiking_difficulty);
+        self.pedestrian.max_hiking_difficulty = Some(max_hiking_difficulty);
         self
     }
     /// Time to rent a bike from a bike share station.
@@ -214,7 +218,7 @@ impl PedestrianCostingOptions {
     ///
     /// Default: `120 seconds`
     pub fn bss_rent_cost(mut self, bss_rent_cost: f32) -> Self {
-        self.bss_rent_cost = Some(bss_rent_cost);
+        self.pedestrian.bss_rent_cost = Some(bss_rent_cost);
         self
     }
     /// Potential effort to rent a bike from a bike share station.
@@ -222,7 +226,7 @@ impl PedestrianCostingOptions {
     /// This value won't be displayed and used only inside the algorithm
     /// Useful when [`super::Costing::Bikeshare`] is chosen as travel mode.
     pub fn bss_rent_penalty(mut self, bss_rent_penalty: f32) -> Self {
-        self.bss_rent_penalty = Some(bss_rent_penalty);
+        self.pedestrian.bss_rent_penalty = Some(bss_rent_penalty);
         self
     }
 
@@ -234,28 +238,28 @@ impl PedestrianCostingOptions {
     ///
     /// Default: `false`
     pub fn only_consider_quasi_shortest(mut self) -> Self {
-        self.shortest = Some(true);
+        self.pedestrian.shortest = Some(true);
         self
     }
     /// Sets the maximum total walking distance of a route.
     ///
     /// Default: `100 km` (`~62 miles`)
     pub fn max_distance(mut self, max_distance: f32) -> Self {
-        self.max_distance = Some(max_distance);
+        self.pedestrian.max_distance = Some(max_distance);
         self
     }
     /// Maximum walking distance at the beginning or end of a route
     ///
     /// Default: `2145 meters` (`~1.5 miles`)
     pub fn transit_start_end_max_distance(mut self, transit_start_end_max_distance: f32) -> Self {
-        self.transit_start_end_max_distance = Some(transit_start_end_max_distance);
+        self.pedestrian.transit_start_end_max_distance = Some(transit_start_end_max_distance);
         self
     }
     /// Maximum walking distance between transfers
     ///
     /// Default: `800 meters` (`~0.5 miles`)
     pub fn transit_transfer_max_distance(mut self, transit_transfer_max_distance: f32) -> Self {
-        self.transit_transfer_max_distance = Some(transit_transfer_max_distance);
+        self.pedestrian.transit_transfer_max_distance = Some(transit_transfer_max_distance);
         self
     }
     /// Changes the type of pedestrian.
@@ -273,7 +277,7 @@ impl PedestrianCostingOptions {
     ///
     /// Default: [`PedestrianType::Foot`]
     pub fn r#type(mut self, r#type: PedestrianType) -> Self {
-        self.r#type = Some(r#type);
+        self.pedestrian.r#type = Some(r#type);
         self
     }
     /// A factor which the cost of a pedestrian edge will be multiplied with on multimodal request, e.g.
@@ -281,7 +285,7 @@ impl PedestrianCostingOptions {
     ///
     /// Default: `1.5`, i.e. avoiding walking
     pub fn mode_factor(mut self, mode_factor: f32) -> Self {
-        self.mode_factor = Some(mode_factor);
+        self.pedestrian.mode_factor = Some(mode_factor);
         self
     }
 }
@@ -302,7 +306,7 @@ mod test {
     fn serialisation() {
         assert_eq!(
             serde_json::to_value(PedestrianCostingOptions::default()).unwrap(),
-            serde_json::json!({})
+            serde_json::json!({"pedestrian":{}})
         );
     }
 }
