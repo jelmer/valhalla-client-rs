@@ -68,7 +68,7 @@ where
     serializer.serialize_str(&value.format("%Y-%m-%dT%H:%M").to_string())
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Units {
     #[default]
     #[serde(rename = "kilometers")]
