@@ -346,18 +346,13 @@ pub struct Maneuver {
     ///
     /// See [`TransitInfo`] for details.
     pub transit_info: Option<TransitInfo>,
-    /// Contains the attributes that describe a specific transit stop.
-    ///
     /// `true` if [`Self::verbal_pre_transition_instruction`] has been appended with
-    /// the verbal instruction of the next maneuver.
+    /// the verbal instruction of the next maneuver and thus contains more than one instruction.
     pub verbal_multi_cue: Option<bool>,
-
     /// Travel mode
     pub travel_mode: TravelMode,
-
     /// Travel type
     pub travel_type: TravelType,
-
     /// Describes bike share maneuver.
     ///
     /// Used when travel_mode is [`TravelMode::Bicycle`].
