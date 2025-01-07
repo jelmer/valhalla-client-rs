@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BicycleType {
     /// Road
     ///
@@ -26,7 +26,7 @@ pub enum BicycleType {
 }
 
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 struct BicycleCostingOptionsInner {
     bicycle_type: Option<BicycleType>,
     cycling_speed: Option<f32>,
@@ -46,7 +46,7 @@ struct BicycleCostingOptionsInner {
     service_penalty: Option<f32>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct BicycleCostingOptions {
     bicycle: BicycleCostingOptionsInner,
 }

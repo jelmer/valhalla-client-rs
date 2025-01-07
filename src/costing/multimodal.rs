@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct MultimodalCostingOptions {
     pedestrian: Option<super::pedestrian::PedestrianCostingOptionsInner>,
     transit: Option<super::transit::TransitCostingOptionsInner>,

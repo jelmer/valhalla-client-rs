@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 struct TruckCostingOptionsInner {
     maneuver_penalty: Option<f32>,
     gate_cost: Option<f32>,
@@ -42,7 +42,7 @@ struct TruckCostingOptionsInner {
     use_truck_route: Option<f32>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct TruckCostingOptions {
     truck: TruckCostingOptionsInner,
 }

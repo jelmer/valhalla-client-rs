@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[serde_with::skip_serializing_none]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub(crate) struct PedestrianCostingOptionsInner {
     walking_speed: Option<f32>,
     walkway_factor: Option<f32>,
@@ -27,7 +27,7 @@ pub(crate) struct PedestrianCostingOptionsInner {
     r#type: Option<PedestrianType>,
     mode_factor: Option<f32>,
 }
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct PedestrianCostingOptions {
     pub(crate) pedestrian: PedestrianCostingOptionsInner,
 }
@@ -297,7 +297,7 @@ impl PedestrianCostingOptions {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PedestrianType {
     #[default]
     #[serde(rename = "foot")]

@@ -1,10 +1,17 @@
 #![forbid(unsafe_code)]
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
+/// [`costing`] model-configuration for different transport modes
 pub mod costing;
+/// Models connected to the [`elevation`]-api
+pub mod elevation;
+/// Models connected to the Time-distance [`matrix`]-api
 pub mod matrix;
+/// Models connected to the Turn-by-turn [`route`]ing-api
 pub mod route;
+/// Shape decoding support for [`route`] and [`elevation`]
 pub mod shapes;
+/// Models connected to the healthcheck via the [`status`]-API
 pub mod status;
 
 use log::debug;
@@ -14,6 +21,14 @@ use serde::{Deserialize, Serialize};
 ///
 /// See <https://en.wikipedia.org/wiki/Geographic_coordinate_system> for further context
 pub type Coordinate = (f32, f32);
+impl From<Coordinate> for shapes::ShapePoint {
+    fn from((lon, lat): Coordinate) -> Self {
+        Self {
+            lon: lon as f64,
+            lat: lat as f64,
+        }
+    }
+}
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct CodedDescription {
@@ -59,7 +74,7 @@ where
     serializer.serialize_str(&value.format("%Y-%m-%dT%H:%M").to_string())
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Units {
     #[default]
     #[serde(rename = "kilometers")]
@@ -198,6 +213,65 @@ impl Valhalla {
         response.error_for_status_ref().map_err(Error::Reqwest)?;
         let text = response.text().map_err(Error::Reqwest)?;
         let response: matrix::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
+        Ok(response)
+    }
+    /// Make an elevation request
+    ///
+    /// Valhalla's elevation lookup service provides digital elevation model (DEM) data as the result of a query.
+    /// The elevation service data has many applications when combined with other routing and navigation data, including computing the steepness of roads and paths or generating an elevation profile chart along a route.
+    ///
+    /// For example, you can get elevation data for a point, a trail, or a trip.
+    /// You might use the results to consider hills for your bicycle trip, or when estimating battery usage for trips in electric vehicles.
+    ///
+    /// See <https://valhalla.github.io/valhalla/api/elevation/api-reference/> for details
+    ///
+    /// # Example:
+    ///
+    /// ```rust,no_run
+    /// use valhalla_client::Valhalla;
+    /// use valhalla_client::elevation::Manifest;
+    ///
+    /// let request = Manifest::builder()
+    ///   .shape([
+    ///     (40.712431, -76.504916),
+    ///     (40.712275, -76.605259),
+    ///     (40.712122, -76.805694),
+    ///     (40.722431, -76.884916),
+    ///     (40.812275, -76.905259),
+    ///     (40.912122, -76.965694),
+    ///   ])
+    ///   .include_range();
+    /// let response = Valhalla::default()
+    ///   .elevation(request).unwrap();
+    /// # assert!(response.height.is_empty());
+    /// # assert_eq!(response.range_height.len(), 6);
+    /// # assert!(response.encoded_polyline.is_none());
+    /// # assert!(response.warnings.is_empty());
+    /// # assert_eq!(response.x_coordinate, None);
+    /// # assert_eq!(response.y_coordinate, None);
+    /// # assert_eq!(response.shape.map(|s|s.len()),Some(6));
+    /// ```
+    pub fn elevation(&self, manifest: elevation::Manifest) -> Result<elevation::Response, Error> {
+        println!(
+            "Sending routing request: {}",
+            serde_json::to_string(&manifest).unwrap()
+        );
+        let mut url = self.base_url.clone();
+        url.path_segments_mut()
+            .expect("base_url is not a valid base url")
+            .push("height");
+        let response = self
+            .client
+            .post(url)
+            .json(&manifest)
+            .send()
+            .map_err(Error::Reqwest)?;
+        if response.status().is_client_error() {
+            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
+        }
+        response.error_for_status_ref().map_err(Error::Reqwest)?;
+        let text = response.text().map_err(Error::Reqwest)?;
+        let response: elevation::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response)
     }
     /// Make a time-distance matrix routing request
