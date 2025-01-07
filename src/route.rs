@@ -76,14 +76,26 @@ impl From<Trip> for gpx::Gpx {
 }
 #[derive(Deserialize, Debug, Clone)]
 pub struct Summary {
+    /// Estimated elapsed time in seconds
     pub time: f64,
+    /// Distance traveled
+    ///
+    /// Unit is either [`super::Units::Metric`] or [`super::Units::Imperial`] and specified in [`Trip`] for clarification.
+    /// See [`Manifest::units`] to change the units.
     pub length: f64,
+    /// If the path uses one or more toll segments
     pub has_toll: bool,
+    /// If the path uses one or more highway segments
     pub has_highway: bool,
+    ///  if the path uses one or more ferry segments
     pub has_ferry: bool,
+    /// Minimum latitude of the sections bounding box
     pub min_lat: f64,
+    /// Minimum longitude of the sections bounding box
     pub min_lon: f64,
+    /// Maximum latitude of the sections bounding box
     pub max_lat: f64,
+    /// Maximum longitude of the sections bounding box
     pub max_lon: f64,
 }
 
