@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
@@ -272,8 +272,15 @@ impl PedestrianCostingOptions {
     /// - gates,
     /// - bollards (which need to be passed on route)
     /// - information about traffic signals on crosswalks
+    /// - Route numbers are not announced for named routes.
     ///
-    /// Route numbers are not announced for named routes.
+    /// If set to [`PedestrianType::Wheelchair`], changes the defaults for the following values to more appropriate settings:
+    /// - [`max_distance`](Self::max_distance),
+    /// - [`walking_speed`](Self::walking_speed) and
+    /// - [`step_penalty`](Self::step_penalty)
+    ///
+    /// **Note:** These options are mutually exclusive.
+    /// In case you want to combine them, please use [`PedestrianType::Blind`] and pass the options adjusted for [`PedestrianType::Wheelchair`] users manually.
     ///
     /// Default: [`PedestrianType::Foot`]
     pub fn r#type(mut self, r#type: PedestrianType) -> Self {
@@ -290,13 +297,28 @@ impl PedestrianCostingOptions {
     }
 }
 
-#[derive(Serialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PedestrianType {
     #[default]
     #[serde(rename = "foot")]
     Foot,
+    /// enables additional route instructions, especially useful for blind users:
+    /// - Announcing crossed streets,
+    /// - the stairs,
+    /// - bridges,
+    /// - tunnels,
+    /// - gates,
+    /// - bollards (which need to be passed on route)
+    /// - information about traffic signals on crosswalks
+    /// - Route numbers are not announced for named routes.
     #[serde(rename = "blind")]
     Blind,
+    /// changes the defaults for the following values to more appropriate settings:
+    /// - [`max_distance`](PedestrianCostingOptions::max_distance),
+    /// - [`walking_speed`](PedestrianCostingOptions::walking_speed) and
+    /// - [`step_penalty`](PedestrianCostingOptions::step_penalty)
+    #[serde(rename = "wheelchair")]
+    Wheelchair,
 }
 
 #[cfg(test)]
