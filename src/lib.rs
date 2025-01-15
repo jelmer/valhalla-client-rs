@@ -1,11 +1,17 @@
 #![forbid(unsafe_code)]
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
+/// [`costing`] model-configuration for different transport modes
 pub mod costing;
+/// Models connected to the [`elevation`]-api
 pub mod elevation;
+/// Models connected to the Time-distance [`matrix`]-api
 pub mod matrix;
+/// Models connected to the Turn-by-turn [`route`]ing-api
 pub mod route;
+/// Shape decoding support for [`route`] and [`elevation`]
 pub mod shapes;
+/// Models connected to the healthcheck via the [`status`]-API
 pub mod status;
 
 use log::debug;

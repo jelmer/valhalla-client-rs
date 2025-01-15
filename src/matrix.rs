@@ -138,12 +138,12 @@ enum MatrixDateTimeType {
     SpecifiedArrival,
 }
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Clone, Copy, PartialEq, Debug)]
 pub struct Location {
     lat: f32,
     lon: f32,
     #[serde(serialize_with = "super::serialize_naive_date_time_opt")]
-    #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<chrono::NaiveDateTime>,
 }
 impl From<super::Coordinate> for Location {

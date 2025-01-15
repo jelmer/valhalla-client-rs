@@ -9,14 +9,34 @@ pub(crate) struct Response {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Trip {
+    /// Status code
     pub status: i32,
+    /// Status message
     pub status_message: String,
+    /// The via [`Manifest::units`] specified units of length are returned.
+    ///
+    /// Either [`super::Units::Metric`] or [`super::Units::Imperial`].
     pub units: super::Units,
+    /// The language of the narration instructions.
+    ///
+    /// If the user specified a language via [`Manifest::language`] in the directions options and the specified language was supported.
+    /// This returned value will be equal to the specified value.
+    /// Otherwise, this value will be the default (`en-US`) language.
     pub language: String,
+    /// Location information is returned in the same form as it is entered.
+    ///
+    /// Additional fields are added to indicate the side of the street.
+    /// Output can be changed via  via [`Manifest::locations`].
     pub locations: Vec<Location>,
+    /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
     pub warnings: Option<Vec<String>>,
+    /// Name of your route request.
+    ///
+    /// If an id is specified via [`Manifest::id`], the naming will be sent thru to the response.
     pub id: Option<String>,
+    /// List of [`Leg`]s constituting a [`Trip`]
     pub legs: Vec<Leg>,
+    /// Basic information about the entire [`Trip`]
     pub summary: Summary,
 }
 #[cfg(feature = "gpx")]
@@ -56,14 +76,26 @@ impl From<Trip> for gpx::Gpx {
 }
 #[derive(Deserialize, Debug, Clone)]
 pub struct Summary {
+    /// Estimated elapsed time in seconds
     pub time: f64,
+    /// Distance traveled
+    ///
+    /// Unit is either [`super::Units::Metric`] or [`super::Units::Imperial`] and specified in [`Trip`] for clarification.
+    /// See [`Manifest::units`] to change the units.
     pub length: f64,
+    /// If the path uses one or more toll segments
     pub has_toll: bool,
+    /// If the path uses one or more highway segments
     pub has_highway: bool,
+    ///  if the path uses one or more ferry segments
     pub has_ferry: bool,
+    /// Minimum latitude of the sections bounding box
     pub min_lat: f64,
+    /// Minimum longitude of the sections bounding box
     pub min_lon: f64,
+    /// Maximum latitude of the sections bounding box
     pub max_lat: f64,
+    /// Maximum longitude of the sections bounding box
     pub max_lon: f64,
 }
 
@@ -80,21 +112,24 @@ pub enum TravelMode {
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
-pub enum CarTravelType {
-    #[serde(rename = "car")]
-    Car,
-}
-
-#[derive(Deserialize, Debug, Clone, Copy)]
-pub enum PedestrianTravelType {
-    #[serde(rename = "foot")]
-    Foot,
+#[serde(untagged)]
+pub enum TravelType {
+    Drive(DriveTravelType),
+    Pedestrian(costing::pedestrian::PedestrianType),
+    Bicycle(costing::bicycle::BicycleType),
+    Transit(TransitTravelType),
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
-pub enum BicycleTravelType {
-    #[serde(rename = "road")]
-    Road,
+pub enum DriveTravelType {
+    #[serde(rename = "car")]
+    Car,
+    #[serde(rename = "motorcycle")]
+    Motorcycle,
+    #[serde(rename = "truck")]
+    Truck,
+    #[serde(rename = "motor_scooter")]
+    MotorScooter,
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
@@ -199,14 +234,59 @@ pub enum ManeuverType {
     BuildingExit,
 }
 
+#[derive(Deserialize, Default, Clone, Debug)]
+#[serde(default)]
+pub struct Sign {
+    /// list of exit number elements.
+    ///
+    /// If an exit number element exists, it is typically just one value
+    ///
+    /// Example: `91B`
+    pub exit_number_elements: Vec<ManeuverSignElement>,
+    /// Exit branch elements.
+    ///
+    /// The exit branch element text is the subsequent road name or route number after the sign
+    ///
+    /// Example: `I 95 North`
+    pub exit_branch_elements: Vec<ManeuverSignElement>,
+    /// Exit toward elements.
+    ///
+    /// The exit toward element text is the location where the road ahead goes.
+    /// The location is typically a control city, but may also be a future road name or route number.
+    ///
+    /// Example: `New York`
+    pub exit_toward_elements: Vec<ManeuverSignElement>,
+    /// Exit name elements.
+    ///
+    /// The exit name element is the interchange identifier.
+    /// Typically not used in the US.
+    ///
+    /// Example: `Gettysburg Pike`
+    pub exit_name_elements: Vec<ManeuverSignElement>,
+}
+
 #[derive(Deserialize, Clone, Debug)]
-pub struct Sign {}
+pub struct ManeuverSignElement {
+    /// Interchange sign text.
+    ///
+    /// Examples:
+    /// - exit number: `91B`
+    /// - exit branch: `I 95 North`
+    /// - exit toward: `New York`
+    /// - exit name: `Gettysburg Pike`
+    pub text: String,
+    /// The frequency of this sign element within a set a consecutive signs
+    pub consecutive_count: Option<usize>,
+}
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Maneuver {
+    /// Type of maneuver
     #[serde(rename = "type")]
     pub type_: ManeuverType,
-
+    /// Written maneuver instruction, describing the maneuver.
+    ///
+    /// Example: "Turn right onto Main Street".
     pub instruction: String,
 
     /// Text suitable for use as a verbal alert in a navigation application.
@@ -278,18 +358,16 @@ pub struct Maneuver {
     ///
     /// See [`TransitInfo`] for details.
     pub transit_info: Option<TransitInfo>,
-    /// Contains the attributes that describe a specific transit stop.
-    ///
     /// `true` if [`Self::verbal_pre_transition_instruction`] has been appended with
-    /// the verbal instruction of the next maneuver.
+    /// the verbal instruction of the next maneuver and thus contains more than one instruction.
     pub verbal_multi_cue: Option<bool>,
-
     /// Travel mode
     pub travel_mode: TravelMode,
-
+    /// Travel type
+    pub travel_type: TravelType,
     /// Describes bike share maneuver.
     ///
-    /// Used when travel_mode is bikeshare.
+    /// Used when travel_mode is [`TravelMode::Bicycle`].
     ///
     /// Default: [`BssManeuverType::NoneAction`]
     pub bss_maneuver_type: Option<BssManeuverType>,
@@ -543,7 +621,7 @@ impl Manifest {
     /// let manifest = Manifest::builder()
     ///   .locations([amsterdam, utrecht])
     ///   .exclude_polygons([polygon_around_leiden, polygon_around_midrecht_between_amsterdam_and_utrecht])
-    ///   .costing(Costing::Bicycle(Default::default()));
+    ///   .costing(Costing::MotorScooter(Default::default()));
     ///
     /// let response = Valhalla::default()
     ///   .route(manifest)
@@ -583,7 +661,7 @@ impl Manifest {
     /// let manifest = Manifest::builder()
     ///   .locations([amsterdam, utrecht])
     ///   .exclude_polygon(polygon_around_leiden)
-    ///   .costing(Costing::Bicycle(Default::default()));
+    ///   .costing(Costing::Auto(Default::default()));
     ///
     /// let response = Valhalla::default()
     ///   .route(manifest)
@@ -899,6 +977,7 @@ impl Location {
     }
 }
 
+#[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Location {
     #[serde(rename = "lat")]
