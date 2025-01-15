@@ -185,7 +185,7 @@ impl From<&Leg> for gpx::TrackSegment {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(serde_repr::Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i8)]
 pub enum ManeuverType {
     None = 0,
