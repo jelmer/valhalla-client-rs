@@ -22,9 +22,11 @@ use valhalla_client::costing::{Costing};
 
 let valhalla = Valhalla::default();
 
+let amsterdam = Location::new(4.9041, 52.3676);
+let utrecht = Location::new(5.1214, 52.0907);
 let manifest = Manifest::builder()
-    .locations([Location::new(4.9041, 52.3676), Location::new(5.1214, 52.0907)])
-    .costing(Costing::Bicycle(Default::default()));
+    .locations([amsterdam, utrecht])
+    .costing(Costing::Motorcycle(Default::default()));
 
 let response = valhalla.route(manifest).unwrap();
 

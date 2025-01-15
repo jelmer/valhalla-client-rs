@@ -621,7 +621,7 @@ impl Manifest {
     /// let manifest = Manifest::builder()
     ///   .locations([amsterdam, utrecht])
     ///   .exclude_polygons([polygon_around_leiden, polygon_around_midrecht_between_amsterdam_and_utrecht])
-    ///   .costing(Costing::Bicycle(Default::default()));
+    ///   .costing(Costing::MotorScooter(Default::default()));
     ///
     /// let response = Valhalla::default()
     ///   .route(manifest)
@@ -661,7 +661,7 @@ impl Manifest {
     /// let manifest = Manifest::builder()
     ///   .locations([amsterdam, utrecht])
     ///   .exclude_polygon(polygon_around_leiden)
-    ///   .costing(Costing::Bicycle(Default::default()));
+    ///   .costing(Costing::Auto(Default::default()));
     ///
     /// let response = Valhalla::default()
     ///   .route(manifest)
