@@ -2,6 +2,7 @@ use crate::costing;
 use crate::shapes::ShapeFormat;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+pub use crate::DateTime;
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
@@ -97,45 +98,6 @@ impl Manifest {
         self.shape_format = Some(shape_format);
         self
     }
-}
-
-/// The local date and time at the location
-#[derive(Serialize, Debug)]
-pub struct DateTime {
-    r#type: MatrixDateTimeType,
-    #[serde(serialize_with = "super::serialize_naive_date_time")]
-    value: chrono::NaiveDateTime,
-}
-impl DateTime {
-    /// Current departure time
-    pub fn from_current_departure_time() -> Self {
-        Self {
-            r#type: MatrixDateTimeType::CurrentDeparture,
-            value: chrono::Local::now().naive_local(),
-        }
-    }
-    /// Specified departure time
-    pub fn from_departure_time(depart_after: chrono::NaiveDateTime) -> Self {
-        Self {
-            r#type: MatrixDateTimeType::SpecifiedDeparture,
-            value: depart_after,
-        }
-    }
-    /// Specified arrival time
-    pub fn from_arrival_time(arrive_by: chrono::NaiveDateTime) -> Self {
-        Self {
-            r#type: MatrixDateTimeType::SpecifiedArrival,
-            value: arrive_by,
-        }
-    }
-}
-
-#[derive(serde_repr::Serialize_repr, Debug, Clone, Copy)]
-#[repr(u8)]
-enum MatrixDateTimeType {
-    CurrentDeparture = 0,
-    SpecifiedDeparture,
-    SpecifiedArrival,
 }
 
 #[serde_with::skip_serializing_none]
