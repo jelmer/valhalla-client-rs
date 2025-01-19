@@ -41,14 +41,6 @@ pub struct Valhalla {
     base_url: url::Url,
 }
 
-#[derive(Debug)]
-pub enum Error {
-    Reqwest(reqwest::Error),
-    Url(url::ParseError),
-    Serde(serde_json::Error),
-    RemoteError(RemoteError),
-}
-
 /// valhalla needs `date_time` fields to be in the `YYYY-MM-DDTHH:MM` format
 pub(crate) fn serialize_naive_date_time_opt<S>(
     value: &Option<chrono::NaiveDateTime>,
@@ -64,7 +56,7 @@ where
 }
 
 /// valhalla needs `date_time` fields to be in the `YYYY-MM-DDTHH:MM` format
-pub(crate) fn serialize_naive_date_time<S>(
+fn serialize_naive_date_time<S>(
     value: &chrono::NaiveDateTime,
     serializer: S,
 ) -> Result<S::Ok, S::Error>
@@ -82,6 +74,53 @@ pub enum Units {
 
     #[serde(rename = "miles")]
     Imperial,
+}
+/// The local date and time at the location
+#[derive(Serialize, Debug)]
+pub struct DateTime {
+    r#type: MatrixDateTimeType,
+    #[serde(serialize_with = "serialize_naive_date_time")]
+    value: chrono::NaiveDateTime,
+}
+
+impl DateTime {
+    /// Current departure time
+    pub fn from_current_departure_time() -> Self {
+        Self {
+            r#type: MatrixDateTimeType::CurrentDeparture,
+            value: chrono::Local::now().naive_local(),
+        }
+    }
+    /// Specified departure time
+    pub fn from_departure_time(depart_after: chrono::NaiveDateTime) -> Self {
+        Self {
+            r#type: MatrixDateTimeType::SpecifiedDeparture,
+            value: depart_after,
+        }
+    }
+    /// Specified arrival time
+    pub fn from_arrival_time(arrive_by: chrono::NaiveDateTime) -> Self {
+        Self {
+            r#type: MatrixDateTimeType::SpecifiedArrival,
+            value: arrive_by,
+        }
+    }
+}
+
+#[derive(serde_repr::Serialize_repr, Debug, Clone, Copy)]
+#[repr(u8)]
+enum MatrixDateTimeType {
+    CurrentDeparture = 0,
+    SpecifiedDeparture,
+    SpecifiedArrival,
+}
+
+#[derive(Debug)]
+pub enum Error {
+    Reqwest(reqwest::Error),
+    Url(url::ParseError),
+    Serde(serde_json::Error),
+    RemoteError(RemoteError),
 }
 
 impl std::fmt::Display for Error {

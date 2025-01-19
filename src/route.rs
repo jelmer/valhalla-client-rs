@@ -1,5 +1,6 @@
 use crate::costing;
 pub use crate::shapes::ShapePoint;
+pub use crate::DateTime;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug, Clone)]
@@ -489,6 +490,7 @@ pub struct Manifest {
     linear_references: Option<bool>,
     prioritize_bidirectional: Option<bool>,
     roundabout_exits: Option<bool>,
+    date_time: Option<DateTime>,
 }
 
 impl Manifest {
@@ -707,6 +709,14 @@ impl Manifest {
     /// Default: `true`
     pub fn roundabout_exits(mut self) -> Self {
         self.roundabout_exits = Some(false);
+        self
+    }
+    /// Shortcut for configuring the arrival/departure date_time settings globally
+    /// instead of specifying it for each of the [locations](Location::date_time).
+    ///
+    /// See [`Location::date_time`] if you want a more granular API.
+    pub fn date_time(mut self, date_time: DateTime) -> Self {
+        self.date_time = Some(date_time);
         self
     }
 }
@@ -975,6 +985,30 @@ impl Location {
         self.street_side_cutoff = Some(street_side_cutoff);
         self
     }
+    /// Expected date/time for the user to be at the location in the local time zone of departure or arrival.
+    ///
+    /// Offers more granularity over setting time than the global [`Manifest::date_time`].
+    ///
+    /// If waiting was set on this location in the request, and it's an intermediate location,
+    /// the date_time will describe the departure time at this location.
+    pub fn date_time(mut self, date_time: chrono::NaiveDateTime) -> Self {
+        self.date_time = Some(date_time);
+        self
+    }
+    /// The waiting time at this location.
+    ///
+    /// Only works if [`Manifest::r#type`] was set to
+    /// - [`LocationType::Break`] or
+    /// - [`LocationType::BreakThrough`]
+    ///
+    /// Example:
+    /// A route describes a pizza delivery tour.
+    /// Each location has a service time, which can be respected by setting waiting on the location.
+    /// Then the departure will be delayed by this duration.
+    pub fn waiting(mut self, waiting: chrono::Duration) -> Self {
+        self.waiting = Some(waiting.num_seconds());
+        self
+    }
 }
 
 #[serde_with::skip_serializing_none]
@@ -1002,6 +1036,11 @@ pub struct Location {
     street_side_tolerance: Option<f32>,
     street_side_max_distance: Option<f32>,
     street_side_cutoff: Option<f32>,
+    /// The waiting time in seconds at this location
+    waiting: Option<i64>,
+    /// Expected date/time for the user to be at the location.
+    #[serde(serialize_with = "super::serialize_naive_date_time_opt")]
+    date_time: Option<chrono::NaiveDateTime>,
 }
 
 #[cfg(test)]
