@@ -1,8 +1,8 @@
 use crate::costing;
 use crate::shapes::ShapeFormat;
+pub use crate::DateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-pub use crate::DateTime;
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
