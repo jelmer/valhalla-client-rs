@@ -13,10 +13,22 @@ These APIs are implemented:
 - [ ] [Expansion](https://valhalla.github.io/valhalla/api/expansion/api-reference/)
 - [x] [Status](https://valhalla.github.io/valhalla/api/status/api-reference/)
 
-## Examples
+## Features and usage
+
+We provide two clients:
+- async: [`valhalla_client::Valhalla`](https://docs.rs/valhalla-client/latest/valhalla_client/struct.Valhalla.html) and
+- sync: [`valhalla_client::blocking::Valhalla`](https://docs.rs/valhalla-client/latest/valhalla_client/blocking/struct.Valhalla.html) using the [tokyo runtime](https://tokio.rs/) internally to call the async version
+
+The second one is behind the (default-enabled) `blocking` feature, so if you don't need it, you can disable it via `default-features = false`.
+
+We also offer the (default-enabled) `gpx` feature.
+This enables [reading and writing GPX (GPS Exchange Format) files](https://docs.rs/gpx/latest/gpx/) for APIs where we have the needed context.
+
+## Example
 
 ```rust
-use valhalla_client::Valhalla;
+// an async version is available at valhalla_client::Valhalla
+use valhalla_client::blocking::Valhalla;
 use valhalla_client::route::{Location, Manifest};
 use valhalla_client::costing::{Costing};
 
@@ -35,3 +47,8 @@ println!("{:#?}", response);
 // If the gpx feature is enabled, you can convert the response to a gpx::Gpx object
 // let gpx = response.trip.into();
 ```
+
+For further examples, please see the different clients:
+- async: [`valhalla_client::Valhalla`](https://docs.rs/valhalla-client/latest/valhalla_client/struct.Valhalla.html) and
+- sync: [`valhalla_client::blocking::Valhalla`](https://docs.rs/valhalla-client/latest/valhalla_client/blocking/struct.Valhalla.html)
+

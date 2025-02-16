@@ -14,7 +14,7 @@ pub mod shapes;
 /// Models connected to the healthcheck via the [`status`]-API
 pub mod status;
 
-use log::debug;
+use log::trace;
 use serde::{Deserialize, Serialize};
 
 /// A longitude, latitude coordinate in degrees
@@ -34,11 +34,6 @@ impl From<Coordinate> for shapes::ShapePoint {
 pub struct CodedDescription {
     pub code: u64,
     pub description: String,
-}
-
-pub struct Valhalla {
-    client: reqwest::blocking::Client,
-    base_url: url::Url,
 }
 
 /// valhalla needs `date_time` fields to be in the `YYYY-MM-DDTHH:MM` format
@@ -136,16 +131,6 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
-impl Default for Valhalla {
-    fn default() -> Self {
-        Self::new(
-            url::Url::parse(VALHALLA_PUBLIC_API_URL)
-                .expect("VALHALLA_PUBLIC_API_URL is not a valid url"),
-        )
-    }
-}
-
 #[derive(Debug, Deserialize)]
 pub struct RemoteError {
     pub error_code: isize,
@@ -154,10 +139,182 @@ pub struct RemoteError {
     pub status: String,
 }
 
+/// synchronous ("blocking") client implementation
+#[cfg(feature = "blocking")]
+pub mod blocking {
+    use crate::{elevation, matrix, route, status, Error, VALHALLA_PUBLIC_API_URL};
+    use std::sync::Arc;
+
+    #[derive(Debug, Clone)]
+    pub struct Valhalla {
+        runtime: Arc<tokio::runtime::Runtime>,
+        client: super::Valhalla,
+    }
+    impl Valhalla {
+        /// Create a sync [Valhalla](https://valhalla.github.io/valhalla/) client
+        pub fn new(base_url: url::Url) -> Self {
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .enable_io()
+                .build()
+                .expect("tokio runtime can be created");
+            Self {
+                runtime: Arc::new(runtime),
+                client: super::Valhalla::new(base_url),
+            }
+        }
+
+        /// Make a turn-by-turn routing request
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::route::{Location, Manifest,};
+        /// use valhalla_client::costing::Costing;
+        ///
+        /// let amsterdam = Location::new(4.9041, 52.3676);
+        /// let utrecht = Location::new(5.1214, 52.0907);
+        ///
+        /// let manifest = Manifest::builder()
+        ///   .locations([utrecht,amsterdam])
+        ///   .alternates(2)
+        ///   .costing(Costing::Auto(Default::default()))
+        ///   .language("de-De");
+        ///
+        /// let response = Valhalla::default().route(manifest).unwrap();
+        /// # use valhalla_client::matrix::Response;
+        /// # assert!(response.warnings.is_none());
+        /// # assert_eq!(response.locations.len(), 2);
+        /// ```
+        pub fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
+            self.runtime
+                .block_on(async move { self.client.route(manifest).await })
+        }
+        /// Make a time-distance matrix routing request
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/matrix/api-reference> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::matrix::{DateTime, Location, Manifest,};
+        /// use valhalla_client::costing::Costing;
+        ///
+        /// let amsterdam = Location::new(4.9041, 52.3676);
+        /// let utrecht = Location::new(5.1214, 52.0907);
+        /// let rotterdam = Location::new(4.4775302894411, 51.92485867761482);
+        /// let den_haag = Location::new(4.324908478055228, 52.07934071633195);
+        ///
+        /// let manifest = Manifest::builder()
+        ///   .verbose_output(true)
+        ///   .sources_to_targets([utrecht],[amsterdam,rotterdam,den_haag])
+        ///   .date_time(DateTime::from_departure_time(chrono::Local::now().naive_local()))
+        ///   .costing(Costing::Auto(Default::default()));
+        ///
+        /// let response = Valhalla::default()
+        ///   .matrix(manifest)
+        ///   .unwrap();
+        /// # use valhalla_client::matrix::Response;
+        /// # if let Response::Verbose(r) = response{
+        /// #   assert!(r.warnings.is_empty());
+        /// #   assert_eq!(r.sources.len(),1);
+        /// #   assert_eq!(r.targets.len(),3);
+        /// # };
+        /// ```
+        pub fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
+            self.runtime
+                .block_on(async move { self.client.matrix(manifest).await })
+        }
+        /// Make an elevation request
+        ///
+        /// Valhalla's elevation lookup service provides digital elevation model (DEM) data as the result of a query.
+        /// The elevation service data has many applications when combined with other routing and navigation data, including computing the steepness of roads and paths or generating an elevation profile chart along a route.
+        ///
+        /// For example, you can get elevation data for a point, a trail, or a trip.
+        /// You might use the results to consider hills for your bicycle trip, or when estimating battery usage for trips in electric vehicles.
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/elevation/api-reference/> for details
+        ///
+        /// # Example:
+        ///
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::elevation::Manifest;
+        ///
+        /// let request = Manifest::builder()
+        ///   .shape([
+        ///     (40.712431, -76.504916),
+        ///     (40.712275, -76.605259),
+        ///     (40.712122, -76.805694),
+        ///     (40.722431, -76.884916),
+        ///     (40.812275, -76.905259),
+        ///     (40.912122, -76.965694),
+        ///   ])
+        ///   .include_range();
+        /// let response = Valhalla::default()
+        ///   .elevation(request).unwrap();
+        /// # assert!(response.height.is_empty());
+        /// # assert_eq!(response.range_height.len(), 6);
+        /// # assert!(response.encoded_polyline.is_none());
+        /// # assert!(response.warnings.is_empty());
+        /// # assert_eq!(response.x_coordinate, None);
+        /// # assert_eq!(response.y_coordinate, None);
+        /// # assert_eq!(response.shape.map(|s|s.len()),Some(6));
+        /// ```
+        pub fn elevation(
+            &self,
+            manifest: elevation::Manifest,
+        ) -> Result<elevation::Response, Error> {
+            self.runtime
+                .block_on(async move { self.client.elevation(manifest).await })
+        }
+        /// Make a status request
+        ///
+        /// This can be used as a health endpoint for the HTTP API or to toggle features in a frontend.
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/status/api-reference/> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::status::Manifest;
+        ///
+        /// let request = Manifest::builder()
+        ///   .verbose_output(false);
+        /// let response = Valhalla::default()
+        ///   .status(request).unwrap();
+        /// # assert!(response.version >= semver::Version::parse("3.1.4").unwrap());
+        /// # assert!(response.tileset_last_modified.timestamp() > 0);
+        /// # assert!(response.verbose.is_none());
+        /// ```
+        pub fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
+            self.runtime
+                .block_on(async move { self.client.status(manifest).await })
+        }
+    }
+    impl Default for Valhalla {
+        fn default() -> Self {
+            Self::new(
+                url::Url::parse(VALHALLA_PUBLIC_API_URL)
+                    .expect("VALHALLA_PUBLIC_API_URL is not a valid url"),
+            )
+        }
+    }
+}
+
+const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
+#[derive(Debug, Clone)]
+pub struct Valhalla {
+    client: reqwest::Client,
+    base_url: url::Url,
+}
+
 impl Valhalla {
+    /// Create an async [Valhalla](https://valhalla.github.io/valhalla/) client
     pub fn new(base_url: url::Url) -> Self {
         Self {
-            client: reqwest::blocking::Client::new(),
+            client: reqwest::Client::new(),
             base_url,
         }
     }
@@ -165,36 +322,40 @@ impl Valhalla {
     /// Make a turn-by-turn routing request
     ///
     /// See <https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference> for details
-    pub fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("route");
-        let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
-        let response: route::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
+    ///
+    /// # Example:
+    /// ```rust
+    /// # async fn route(){
+    /// use valhalla_client::Valhalla;
+    /// use valhalla_client::route::{Location, Manifest,};
+    /// use valhalla_client::costing::Costing;
+    ///
+    /// let amsterdam = Location::new(4.9041, 52.3676);
+    /// let utrecht = Location::new(5.1214, 52.0907);
+    ///
+    /// let manifest = Manifest::builder()
+    ///   .locations([utrecht,amsterdam])
+    ///   .alternates(2)
+    ///   .costing(Costing::Auto(Default::default()))
+    ///   .language("de-De");
+    ///
+    /// let response = Valhalla::default().route(manifest).await.unwrap();
+    /// # assert!(response.warnings.is_none());
+    /// # assert_eq!(response.locations.len(), 2);
+    /// # }
+    /// ```
+    pub async fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
+        let response: route::Response = self.do_request(manifest, "route", "route").await?;
         Ok(response.trip)
     }
+
     /// Make a time-distance matrix routing request
     ///
     /// See <https://valhalla.github.io/valhalla/api/matrix/api-reference> for details
     ///
     /// # Example:
-    /// ```rust,no_run
-    /// use chrono::Local;
+    /// ```rust
+    /// # async fn matrix(){
     /// use valhalla_client::Valhalla;
     /// use valhalla_client::matrix::{DateTime, Location, Manifest,};
     /// use valhalla_client::costing::Costing;
@@ -207,11 +368,11 @@ impl Valhalla {
     /// let manifest = Manifest::builder()
     ///   .verbose_output(true)
     ///   .sources_to_targets([utrecht],[amsterdam,rotterdam,den_haag])
-    ///   .date_time(DateTime::from_departure_time(Local::now().naive_local()))
+    ///   .date_time(DateTime::from_departure_time(chrono::Local::now().naive_local()))
     ///   .costing(Costing::Auto(Default::default()));
     ///
     /// let response = Valhalla::default()
-    ///   .matrix(manifest)
+    ///   .matrix(manifest).await
     ///   .unwrap();
     /// # use valhalla_client::matrix::Response;
     /// # if let Response::Verbose(r) = response{
@@ -219,8 +380,9 @@ impl Valhalla {
     /// #   assert_eq!(r.sources.len(),1);
     /// #   assert_eq!(r.targets.len(),3);
     /// # };
+    /// # }
     /// ```
-    pub fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
+    pub async fn matrix(&self, manifest: matrix::Manifest) -> Result<matrix::Response, Error> {
         debug_assert_ne!(
             manifest.targets.len(),
             0,
@@ -232,27 +394,8 @@ impl Valhalla {
             "a matrix route needs at least one source specified"
         );
 
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("sources_to_targets");
-        let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
-        let response: matrix::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
-        Ok(response)
+        self.do_request(manifest, "sources_to_targets", "matrix")
+            .await
     }
     /// Make an elevation request
     ///
@@ -267,6 +410,7 @@ impl Valhalla {
     /// # Example:
     ///
     /// ```rust,no_run
+    /// # async fn elevation() {
     /// use valhalla_client::Valhalla;
     /// use valhalla_client::elevation::Manifest;
     ///
@@ -281,7 +425,7 @@ impl Valhalla {
     ///   ])
     ///   .include_range();
     /// let response = Valhalla::default()
-    ///   .elevation(request).unwrap();
+    ///   .elevation(request).await.unwrap();
     /// # assert!(response.height.is_empty());
     /// # assert_eq!(response.range_height.len(), 6);
     /// # assert!(response.encoded_polyline.is_none());
@@ -289,31 +433,15 @@ impl Valhalla {
     /// # assert_eq!(response.x_coordinate, None);
     /// # assert_eq!(response.y_coordinate, None);
     /// # assert_eq!(response.shape.map(|s|s.len()),Some(6));
+    /// # }
     /// ```
-    pub fn elevation(&self, manifest: elevation::Manifest) -> Result<elevation::Response, Error> {
-        println!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("base_url is not a valid base url")
-            .push("height");
-        let response = self
-            .client
-            .post(url)
-            .json(&manifest)
-            .send()
-            .map_err(Error::Reqwest)?;
-        if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
-        }
-        response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
-        let response: elevation::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
-        Ok(response)
+    pub async fn elevation(
+        &self,
+        manifest: elevation::Manifest,
+    ) -> Result<elevation::Response, Error> {
+        self.do_request(manifest, "height", "elevation").await
     }
-    /// Make a time-distance matrix routing request
+    /// Make a status request
     ///
     /// This can be used as a health endpoint for the HTTP API or to toggle features in a frontend.
     ///
@@ -321,38 +449,62 @@ impl Valhalla {
     ///
     /// # Example:
     /// ```rust,no_run
+    /// # async fn status(){
     /// use valhalla_client::Valhalla;
     /// use valhalla_client::status::Manifest;
     ///
     /// let request = Manifest::builder()
     ///   .verbose_output(false);
     /// let response = Valhalla::default()
-    ///   .status(request).unwrap();
+    ///   .status(request).await.unwrap();
     /// # assert!(response.version >= semver::Version::parse("3.1.4").unwrap());
     /// # assert!(response.tileset_last_modified.timestamp() > 0);
     /// # assert!(response.verbose.is_none());
+    /// # }
     /// ```
-    pub fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
-        debug!(
-            "Sending routing request: {}",
-            serde_json::to_string(&manifest).unwrap()
-        );
+    pub async fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
+        self.do_request(manifest, "status", "status").await
+    }
+
+    async fn do_request<Resp: for<'de> serde::Deserialize<'de>>(
+        &self,
+        manifest: impl serde::Serialize,
+        path: &'static str,
+        name: &'static str,
+    ) -> Result<Resp, Error> {
+        if log::log_enabled!(log::Level::Trace) {
+            let request = serde_json::to_string(&manifest).unwrap();
+            trace!("Sending {name} request: {request}");
+        }
         let mut url = self.base_url.clone();
         url.path_segments_mut()
             .expect("base_url is not a valid base url")
-            .push("status");
+            .push(path);
         let response = self
             .client
             .post(url)
             .json(&manifest)
             .send()
+            .await
             .map_err(Error::Reqwest)?;
         if response.status().is_client_error() {
-            return Err(Error::RemoteError(response.json().map_err(Error::Reqwest)?));
+            return Err(Error::RemoteError(
+                response.json().await.map_err(Error::Reqwest)?,
+            ));
         }
         response.error_for_status_ref().map_err(Error::Reqwest)?;
-        let text = response.text().map_err(Error::Reqwest)?;
-        let response: status::Response = serde_json::from_str(&text).map_err(Error::Serde)?;
+        let text = response.text().await.map_err(Error::Reqwest)?;
+        trace!("{name} responded: {text}");
+        let response: Resp = serde_json::from_str(&text).map_err(Error::Serde)?;
         Ok(response)
+    }
+}
+
+impl Default for Valhalla {
+    fn default() -> Self {
+        Self::new(
+            url::Url::parse(VALHALLA_PUBLIC_API_URL)
+                .expect("VALHALLA_PUBLIC_API_URL is not a valid url"),
+        )
     }
 }

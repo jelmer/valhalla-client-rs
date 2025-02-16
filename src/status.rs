@@ -70,10 +70,10 @@ pub struct VerboseStatus {
     pub warnings: Vec<Value>,
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "blocking"))]
 mod tests {
     use super::*;
-    use crate::Valhalla;
+    use crate::blocking::Valhalla;
     #[test]
     fn test_status_verbose() {
         let request = Manifest::builder().verbose_output(true);
