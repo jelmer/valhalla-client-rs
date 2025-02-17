@@ -17,7 +17,7 @@ These APIs are implemented:
 
 We provide two clients:
 - async: [`valhalla_client::Valhalla`](https://docs.rs/valhalla-client/latest/valhalla_client/struct.Valhalla.html) and
-- sync: [`valhalla_client::blocking::Valhalla`](https://docs.rs/valhalla-client/latest/valhalla_client/blocking/struct.Valhalla.html) using the [tokyo runtime](https://tokio.rs/) internally to call the async version
+- sync: [`valhalla_client::blocking::Valhalla`](https://docs.rs/valhalla-client/latest/valhalla_client/blocking/struct.Valhalla.html) using the [tokio runtime](https://tokio.rs/) internally to call the async version
 
 The second one is behind the (default-enabled) `blocking` feature, so if you don't need it, you can disable it via `default-features = false`.
 
