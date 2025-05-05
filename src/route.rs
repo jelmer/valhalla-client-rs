@@ -4,11 +4,13 @@ pub use crate::DateTime;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug, Clone)]
+/// Response from the Valhalla route service
 pub(crate) struct Response {
     pub(crate) trip: Trip,
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// Description of a trip
 pub struct Trip {
     /// Status code
     pub status: i32,
@@ -76,6 +78,7 @@ impl From<Trip> for gpx::Gpx {
     }
 }
 #[derive(Deserialize, Debug, Clone)]
+/// Summary information about the entire trip
 pub struct Summary {
     /// Estimated elapsed time in seconds
     pub time: f64,
@@ -101,74 +104,106 @@ pub struct Summary {
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+/// Travel mode
 pub enum TravelMode {
     #[serde(rename = "drive")]
+    /// Drive (car, motorcycle, truck, motor scooter)
     Drive,
     #[serde(rename = "pedestrian")]
+    /// Pedestrian (walking)
     Pedestrian,
     #[serde(rename = "bicycle")]
+    /// Bicycle (bike)
     Bicycle,
     #[serde(rename = "transit")]
+    /// Transit (bus, tram, metro, rail, ferry, cable car, gondola, funicular)
     Transit,
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(untagged)]
+/// Travel type
 pub enum TravelType {
+    /// Drive
     Drive(DriveTravelType),
+    /// Pedestrian
     Pedestrian(costing::pedestrian::PedestrianType),
+    /// Bicycle
     Bicycle(costing::bicycle::BicycleType),
+    /// Transit
     Transit(TransitTravelType),
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+/// Drive travel type
 pub enum DriveTravelType {
     #[serde(rename = "car")]
+    /// Car
     Car,
     #[serde(rename = "motorcycle")]
+    /// Motorcycle
     Motorcycle,
     #[serde(rename = "truck")]
+    /// Truck
     Truck,
     #[serde(rename = "motor_scooter")]
+    /// Motor scooter
     MotorScooter,
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+/// Transit travel type
 pub enum TransitTravelType {
     #[serde(rename = "tram")]
+    /// Tram
     Tram,
     #[serde(rename = "metro")]
+    /// Metro
     Metro,
     #[serde(rename = "rail")]
+    /// Rail
     Rail,
     #[serde(rename = "bus")]
+    /// Bus
     Bus,
     #[serde(rename = "ferry")]
+    /// Ferry
     Ferry,
     #[serde(rename = "cable_car")]
+    /// Cable car
     CableCar,
     #[serde(rename = "gondola")]
+    /// Gondola
     Gondola,
     #[serde(rename = "funicular")]
+    /// Funicular
     Funicular,
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+/// Bike share maneuver type
 pub enum BssManeuverType {
     #[serde(rename = "NoneAction")]
+    /// No action
     NoneAction,
     #[serde(rename = "RentBikeAtBikeShare")]
+    /// Rent bike at bike share
     RentBikeAtBikeShare,
     #[serde(rename = "ReturnBikeAtBikeShare")]
+    /// Return bike at bike share
     ReturnBikeAtBikeShare,
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// A leg is a section of the route between two locations.
 pub struct Leg {
+    /// Summary information about the leg
     pub summary: Summary,
 
+    /// Maneuver information
     pub maneuvers: Vec<Maneuver>,
 
+    /// The shape of the leg
     #[serde(deserialize_with = "crate::shapes::deserialize_shape")]
     pub shape: Vec<ShapePoint>,
 }
@@ -187,8 +222,11 @@ impl From<&Leg> for gpx::TrackSegment {
 }
 
 #[derive(serde_repr::Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(missing_docs)]
 #[repr(i8)]
+/// The type of maneuver
 pub enum ManeuverType {
+    /// No maneuver
     None = 0,
     Start,
     StartRight,
@@ -237,6 +275,8 @@ pub enum ManeuverType {
 
 #[derive(Deserialize, Default, Clone, Debug)]
 #[serde(default)]
+/// A sign is a collection of elements that are used to describe the exit number, exit branch, exit
+/// toward, and exit name.
 pub struct Sign {
     /// list of exit number elements.
     ///
@@ -267,6 +307,7 @@ pub struct Sign {
 }
 
 #[derive(Deserialize, Clone, Debug)]
+/// A sign element is a single text string that is part of a sign.
 pub struct ManeuverSignElement {
     /// Interchange sign text.
     ///
@@ -281,6 +322,7 @@ pub struct ManeuverSignElement {
 }
 
 #[derive(Deserialize, Clone, Debug)]
+/// A maneuver is a single instruction to the user.
 pub struct Maneuver {
     /// Type of maneuver
     #[serde(rename = "type")]
@@ -375,6 +417,7 @@ pub struct Maneuver {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// Transit information
 pub struct TransitInfo {
     /// Global transit route identifier.
     pub onestop_id: String,
@@ -427,6 +470,7 @@ pub struct TransitInfo {
 
 #[derive(serde_repr::Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
+/// Transit stop type
 pub enum TransitStopType {
     /// Simple stop.
     Stop = 0,
@@ -435,8 +479,10 @@ pub enum TransitStopType {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// Transit stop information
 pub struct TransitStop {
     #[serde(rename = "type")]
+    /// The type of transit stop
     pub type_: TransitStopType,
     /// Name of the stop or station
     ///
@@ -458,6 +504,7 @@ pub struct TransitStop {
 }
 
 #[derive(Serialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
+/// Type of the directions
 pub enum DirectionsType {
     /// indicating no maneuvers or instructions should be returned.
     #[serde(rename = "none")]
@@ -476,6 +523,7 @@ pub enum DirectionsType {
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
+/// Route request
 pub struct Manifest {
     #[serde(flatten)]
     costing: Option<costing::Costing>,
@@ -495,6 +543,7 @@ pub struct Manifest {
 
 impl Manifest {
     #[must_use]
+    /// Create a new [`Manifest`] builder
     pub fn builder() -> Self {
         Self::default()
     }
@@ -722,31 +771,40 @@ impl Manifest {
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Copy, Debug, PartialEq, Eq)]
+/// Location type
 pub enum LocationType {
     #[default]
     #[serde(rename = "break")]
+    /// A location at which we allows u-turns and generate legs and arrival/departure maneuvers
     Break,
 
     #[serde(rename = "through")]
+    /// A location at which we neither allow u-turns nor generate legs or arrival/departure maneuvers
     Through,
 
     #[serde(rename = "via")]
+    /// A location at which we allow u-turns but do not generate legs or arrival/departure maneuvers
     Via,
 
     #[serde(rename = "break_through")]
+    /// A location at which we do not allow u-turns but do generate legs and arrival/departure maneuvers
     BreakThrough,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Copy, Debug, PartialEq, Eq)]
+/// Side of the street
 pub enum Side {
     #[serde(rename = "same")]
+    /// The location should be visited from the same side of the road
     Same,
 
     #[serde(rename = "opposite")]
+    /// The location should be visited from the opposite side of the road
     Opposite,
 
     #[default]
     #[serde(rename = "either")]
+    /// The location should be visited from either side of the road
     Either,
 }
 
@@ -1013,6 +1071,7 @@ impl Location {
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
+/// A location is a point on the map that can be used to start or end a route.
 pub struct Location {
     #[serde(rename = "lat")]
     latitude: f32,

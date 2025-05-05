@@ -4,18 +4,29 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ShapeFormat {
     #[serde(rename = "polyline6")]
+    /// A polyline with 6 degrees of precision
     Polyline6,
+
     #[serde(rename = "polyline5")]
+    /// A polyline with 5 degrees of precision
     Polyline5,
+
     #[serde(rename = "geojson")]
+    /// A GeoJSON shape
     GeoJSON,
+
     #[serde(rename = "no_shape")]
+    /// No shape
     NoShape,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+/// A point in a shape
 pub struct ShapePoint {
+    /// Longitude
     pub lon: f64,
+
+    /// Latitude
     pub lat: f64,
 }
 

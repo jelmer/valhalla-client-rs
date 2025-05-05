@@ -1,4 +1,5 @@
 #![forbid(unsafe_code)]
+#![deny(missing_docs)]
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
 
 /// [`costing`] model-configuration for different transport modes
@@ -31,8 +32,12 @@ impl From<Coordinate> for shapes::ShapePoint {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// A description with a code
 pub struct CodedDescription {
+    /// A code
     pub code: u64,
+
+    /// A human-readable description
     pub description: String,
 }
 
@@ -62,12 +67,15 @@ where
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
+/// The units used for the response
 pub enum Units {
     #[default]
     #[serde(rename = "kilometers")]
+    /// Metric units
     Metric,
 
     #[serde(rename = "miles")]
+    /// Imperial units
     Imperial,
 }
 /// The local date and time at the location
@@ -111,10 +119,18 @@ enum MatrixDateTimeType {
 }
 
 #[derive(Debug)]
+/// An error that can occur when using the Valhalla API
 pub enum Error {
+    /// An error from the reqwest library
     Reqwest(reqwest::Error),
+
+    /// An error from the url library
     Url(url::ParseError),
+
+    /// An error from the serde library
     Serde(serde_json::Error),
+
+    /// An error from the remote API
     RemoteError(RemoteError),
 }
 
@@ -132,10 +148,18 @@ impl std::fmt::Display for Error {
 impl std::error::Error for Error {}
 
 #[derive(Debug, Deserialize)]
+/// An error response from the Valhalla API
 pub struct RemoteError {
+    /// An error code
     pub error_code: isize,
+
+    /// A human-readable error message
     pub error: String,
+
+    /// HTTP status code
     pub status_code: isize,
+
+    /// HTTP status message
     pub status: String,
 }
 
@@ -146,6 +170,7 @@ pub mod blocking {
     use std::sync::Arc;
 
     #[derive(Debug, Clone)]
+    /// A synchronous client for the Valhalla API
     pub struct Valhalla {
         runtime: Arc<tokio::runtime::Runtime>,
         client: super::Valhalla,
@@ -305,6 +330,7 @@ pub mod blocking {
 
 const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
 #[derive(Debug, Clone)]
+/// async Valhalla client
 pub struct Valhalla {
     client: reqwest::Client,
     base_url: url::Url,

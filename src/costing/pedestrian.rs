@@ -1,7 +1,9 @@
+//! Pedestrian-specific costing options
 use serde::{Deserialize, Serialize};
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
+/// Options for pedestrian routing
 pub(crate) struct PedestrianCostingOptionsInner {
     walking_speed: Option<f32>,
     walkway_factor: Option<f32>,
@@ -28,11 +30,13 @@ pub(crate) struct PedestrianCostingOptionsInner {
     mode_factor: Option<f32>,
 }
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
+/// Options for pedestrian routing
 pub struct PedestrianCostingOptions {
     pub(crate) pedestrian: PedestrianCostingOptionsInner,
 }
 impl PedestrianCostingOptions {
     #[must_use]
+    /// Creates a new instance of [`PedestrianCostingOptions`]
     pub fn builder() -> Self {
         Self::default()
     }
@@ -298,9 +302,11 @@ impl PedestrianCostingOptions {
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
+/// Type of pedestrian
 pub enum PedestrianType {
     #[default]
     #[serde(rename = "foot")]
+    /// On foot
     Foot,
     /// enables additional route instructions, especially useful for blind users:
     /// - Announcing crossed streets,

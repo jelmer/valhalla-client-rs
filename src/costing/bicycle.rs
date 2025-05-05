@@ -1,6 +1,8 @@
+//! Cycle routing costing options.
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq)]
+/// Bicycle type.
 pub enum BicycleType {
     /// Road
     ///
@@ -47,11 +49,13 @@ struct BicycleCostingOptionsInner {
 }
 
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
+/// Bicycle costing options.
 pub struct BicycleCostingOptions {
     bicycle: BicycleCostingOptionsInner,
 }
 impl BicycleCostingOptions {
     #[must_use]
+    /// Creates a new [`BicycleCostingOptions`] instance.
     pub fn builder() -> Self {
         Self::default()
     }

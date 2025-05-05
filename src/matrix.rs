@@ -6,6 +6,7 @@ use serde_json::Value;
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
+/// Matrix request
 pub struct Manifest {
     pub(crate) targets: Vec<Location>,
     pub(crate) sources: Vec<Location>,
@@ -18,6 +19,7 @@ pub struct Manifest {
     shape_format: Option<ShapeFormat>,
 }
 impl Manifest {
+    /// Create a builder for the matrix request
     pub fn builder() -> Self {
         Default::default()
     }
@@ -102,6 +104,7 @@ impl Manifest {
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Clone, Copy, PartialEq, Debug)]
+/// Location of a point on the map
 pub struct Location {
     lat: f32,
     lon: f32,
@@ -184,6 +187,7 @@ impl From<VerboseLocation> for Location {
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
+/// Response to the matrix request
 pub enum Response {
     /// Returned in `verbose` mode.
     ///
@@ -195,6 +199,7 @@ pub enum Response {
     Concise(ConciseResponse),
 }
 #[derive(Deserialize, Debug, Clone)]
+/// Verbose response to the matrix request
 pub struct VerboseResponse {
     /// Name of the route request.
     ///
@@ -224,6 +229,7 @@ pub struct VerboseResponse {
     pub sources_to_targets: Vec<Vec<VerboseSourceToTarget>>,
 }
 #[derive(Deserialize, Debug, Clone)]
+/// Concise response to the matrix request
 pub struct ConciseResponse {
     /// Name of the route request.
     ///
@@ -250,6 +256,7 @@ pub struct ConciseResponse {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// Concise source to target
 pub struct ConciseSourceToTargets {
     /// The computed time between each set of points.
     ///
@@ -268,6 +275,7 @@ pub struct ConciseSourceToTargets {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// Verbose source to target
 pub struct VerboseSourceToTarget {
     /// The computed distance between each set of points.
     ///

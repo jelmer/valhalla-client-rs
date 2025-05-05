@@ -1,3 +1,4 @@
+//! Transit-specific costing options
 use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
@@ -10,11 +11,13 @@ pub(crate) struct TransitCostingOptionsInner {
 }
 
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
+/// Transit costing options
 pub struct TransitCostingOptions {
     pub(crate) transit: TransitCostingOptionsInner,
 }
 impl TransitCostingOptions {
     #[must_use]
+    /// Builder for [`TransitCostingOptions`]
     pub fn builder() -> Self {
         Self::default()
     }
@@ -142,6 +145,7 @@ impl TransitCostingOptions {
 }
 
 #[derive(Serialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
+/// Action to take when filtering
 pub enum Action {
     /// Include only the `ids` listed in the filter
     #[default]

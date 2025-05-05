@@ -1,3 +1,4 @@
+//! Motor Scooter Costing Options
 use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
@@ -59,6 +60,7 @@ pub struct MotorScooterCostingOptions {
 
 impl MotorScooterCostingOptions {
     #[must_use]
+    /// Creates a new instance of [`MotorScooterCostingOptions`].
     pub fn builder() -> Self {
         Self::default()
     }
@@ -473,16 +475,22 @@ impl MotorScooterCostingOptions {
 }
 
 #[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq)]
+/// The speed sources that can be used for routing.
 pub enum UsedSpeedSources {
     #[serde(rename = "all")]
+    /// All speed sources.
     All,
     #[serde(rename = "freeflow")]
+    /// Freeflow speed sources.
     Freeflow,
     #[serde(rename = "constrained")]
+    /// Constrained speed sources.
     Constrained,
     #[serde(rename = "predicted")]
+    /// Predicted speed sources.
     Predicted,
     #[serde(rename = "current")]
+    /// Current speed sources.
     Current,
 }
 #[cfg(test)]
