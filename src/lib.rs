@@ -180,6 +180,7 @@ pub mod blocking {
         pub fn new(base_url: url::Url) -> Self {
             let runtime = tokio::runtime::Builder::new_current_thread()
                 .enable_io()
+                .enable_time()
                 .build()
                 .expect("tokio runtime can be created");
             Self {
