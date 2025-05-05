@@ -20,6 +20,7 @@ pub use truck::TruckCostingOptions;
 #[derive(Serialize, Clone, Debug, PartialEq)]
 #[serde(tag = "costing", content = "costing_options")]
 #[allow(clippy::large_enum_variant)]
+/// Costing options for different travel modes.
 pub enum Costing {
     /// Standard costing for driving routes by car, motorcycle, truck, and so on.
     ///

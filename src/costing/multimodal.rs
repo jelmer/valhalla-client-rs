@@ -1,13 +1,16 @@
+//! Multimodal costing options
 use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
+/// The multimodal costing options
 pub struct MultimodalCostingOptions {
     pedestrian: Option<super::pedestrian::PedestrianCostingOptionsInner>,
     transit: Option<super::transit::TransitCostingOptionsInner>,
 }
 impl MultimodalCostingOptions {
     #[must_use]
+    /// Creates a new instance of [`MultimodalCostingOptions`]
     pub fn builder() -> Self {
         Self::default()
     }

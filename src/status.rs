@@ -4,10 +4,12 @@ use std::collections::HashSet;
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug)]
+/// Request to get the current status of the Valhalla server
 pub struct Manifest {
     verbose: Option<bool>,
 }
 impl Manifest {
+    /// Creates a new [`Manifest`] request
     pub fn builder() -> Self {
         Default::default()
     }
@@ -27,6 +29,7 @@ impl Manifest {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// Response to a [`Manifest`] request
 pub struct Response {
     /// Current Valhalla version
     ///
@@ -49,6 +52,7 @@ pub struct Response {
     pub verbose: Option<VerboseStatus>,
 }
 #[derive(Deserialize, Debug, Clone)]
+/// Verbose information about the deployment
 pub struct VerboseStatus {
     /// Whether a valid tileset is currently loaded
     pub has_tiles: bool,

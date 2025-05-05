@@ -4,6 +4,7 @@ use serde_json::Value;
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default, Debug, PartialEq, Clone)]
+/// Request to the elevation service.
 pub struct Manifest {
     id: Option<String>,
     height_precision: Option<HeightPrecision>,
@@ -14,6 +15,7 @@ pub struct Manifest {
     shape_format: Option<ShapeFormat>,
 }
 impl Manifest {
+    /// Creates a new [`Manifest`] builder.
     pub fn builder() -> Self {
         Default::default()
     }
@@ -100,6 +102,7 @@ pub enum HeightPrecision {
 }
 
 #[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+/// Specifies the precision (number of decimal places) of the encoded polyline.
 pub enum ShapeFormat {
     /// polyline is encoded with 6 digit precision
     #[serde(rename = "polyline6")]
@@ -111,6 +114,7 @@ pub enum ShapeFormat {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+/// Response to the request.
 pub struct Response {
     /// Name of the route request.
     ///

@@ -1,3 +1,4 @@
+//! Truck-related costing options.
 use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
@@ -43,11 +44,13 @@ struct TruckCostingOptionsInner {
 }
 
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
+/// Options for truck routing.
 pub struct TruckCostingOptions {
     truck: TruckCostingOptionsInner,
 }
 impl TruckCostingOptions {
     #[must_use]
+    /// Creates a new builder of [`TruckCostingOptions`].
     pub fn builder() -> Self {
         Self::default()
     }

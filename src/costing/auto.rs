@@ -1,3 +1,4 @@
+//! Auto Costing Options
 use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
@@ -43,11 +44,13 @@ struct AutoCostingOptionsInner {
 }
 
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
+/// Auto Costing Options
 pub struct AutoCostingOptions {
     auto: AutoCostingOptionsInner,
 }
 impl AutoCostingOptions {
     #[must_use]
+    /// Creates a new instance of [`AutoCostingOptions`].
     pub fn builder() -> Self {
         Self::default()
     }
@@ -430,16 +433,22 @@ impl AutoCostingOptions {
 }
 
 #[derive(Serialize, Debug, Clone, Copy, Eq, PartialEq)]
+/// Used Speed Sources
 pub enum UsedSpeedSources {
     #[serde(rename = "all")]
+    /// All speed sources
     All,
     #[serde(rename = "freeflow")]
+    /// Freeflow speed
     Freeflow,
     #[serde(rename = "constrained")]
+    /// Constrained speed
     Constrained,
     #[serde(rename = "predicted")]
+    /// Predicted speed
     Predicted,
     #[serde(rename = "current")]
+    /// Current speed
     Current,
 }
 #[cfg(test)]

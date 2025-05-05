@@ -1,3 +1,4 @@
+//! Costing options for motorcycle routing
 use serde::Serialize;
 
 #[serde_with::skip_serializing_none]
@@ -53,6 +54,7 @@ pub struct MotorcycleCostingOptions {
 }
 impl MotorcycleCostingOptions {
     #[must_use]
+    /// Creates a new instance of [`MotorcycleCostingOptions`].
     pub fn builder() -> Self {
         Self::default()
     }
@@ -446,16 +448,22 @@ impl MotorcycleCostingOptions {
 }
 
 #[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq)]
+/// The speed sources that can be used for routing.
 pub enum UsedSpeedSources {
     #[serde(rename = "all")]
+    /// All available speed sources.
     All,
     #[serde(rename = "freeflow")]
+    /// Freeflow speed.
     Freeflow,
     #[serde(rename = "constrained")]
+    /// Constrained speed.
     Constrained,
     #[serde(rename = "predicted")]
+    /// Predicted speed.
     Predicted,
     #[serde(rename = "current")]
+    /// Current speed.
     Current,
 }
 
