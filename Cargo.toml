@@ -1,6 +1,6 @@
 [package]
 name = "valhalla-client"
-version = "0.4.1"
+version = "0.5.0"
 edition = "2021"
 description = "API client for the Valhalla routing engine"
 authors = ["Jelmer Vernooĳ <jelmer@jelmer.uk>", "Frank Elsinga <frank.elsinga@tum.de>"]
