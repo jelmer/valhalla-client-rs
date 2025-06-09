@@ -93,14 +93,19 @@ pub struct Summary {
     pub has_highway: bool,
     ///  if the path uses one or more ferry segments
     pub has_ferry: bool,
-    /// Minimum latitude of the sections bounding box
+    /// Minimum latitude of the sections' bounding box
     pub min_lat: f64,
-    /// Minimum longitude of the sections bounding box
+    /// Minimum longitude of the sections' bounding box
     pub min_lon: f64,
-    /// Maximum latitude of the sections bounding box
+    /// Maximum latitude of the sections' bounding box
     pub max_lat: f64,
-    /// Maximum longitude of the sections bounding box
+    /// Maximum longitude of the sections' bounding box
     pub max_lon: f64,
+    /// List of level change-events (i.e. when navigating inside a building)
+    /// An event is `(shape_index, level)`
+    ///
+    /// Can be used to split up the geometry along the level changes.
+    pub level_changes: Option<Vec<(usize, f32)>>,
 }
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
@@ -1067,6 +1072,11 @@ impl Location {
         self.waiting = Some(waiting.num_seconds());
         self
     }
+    /// A set of optional filters to exclude candidate edges based on their attribution.
+    pub fn search_filter(mut self, search_filter: SearchFilter) -> Self {
+        self.search_filter = Some(search_filter);
+        self
+    }
 }
 
 #[serde_with::skip_serializing_none]
@@ -1100,6 +1110,130 @@ pub struct Location {
     /// Expected date/time for the user to be at the location.
     #[serde(serialize_with = "super::serialize_naive_date_time_opt")]
     date_time: Option<chrono::NaiveDateTime>,
+    /// A set of optional filters to exclude candidate edges based on their attribution.
+    search_filter: Option<SearchFilter>,
+}
+
+/// A set of optional filters to exclude candidate edges based on their attribution.
+#[serde_with::skip_serializing_none]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+pub struct SearchFilter {
+    exclude_tunnel: Option<bool>,
+    exclude_bridge: Option<bool>,
+    exclude_toll: Option<bool>,
+    exclude_ferry: Option<bool>,
+    exclude_ramp: Option<bool>,
+    exclude_closures: Option<bool>,
+    min_road_class: Option<RoadClass>,
+    max_road_class: Option<RoadClass>,
+    level: Option<f32>,
+}
+impl SearchFilter {
+    #[must_use]
+    /// Creates a new instance of [`SearchFilter`].
+    pub fn builder() -> Self {
+        Default::default()
+    }
+
+    /// Whether to exclude roads marked as tunnels
+    ///
+    /// Default: `false`
+    pub fn exclude_tunnel(mut self, exclude_tunnel: bool) -> Self {
+        self.exclude_tunnel = Some(exclude_tunnel);
+        self
+    }
+    /// Whether to exclude roads marked as bridges
+    ///
+    /// Default: `false`
+    pub fn exclude_bridge(mut self, exclude_bridge: bool) -> Self {
+        self.exclude_bridge = Some(exclude_bridge);
+        self
+    }
+    /// Whether to exclude toll
+    ///
+    /// Default: `false`
+    pub fn exclude_toll(mut self, exclude_toll: bool) -> Self {
+        self.exclude_toll = Some(exclude_toll);
+        self
+    }
+    /// Whether to exclude ferry
+    ///
+    /// Default: `false`
+    pub fn exclude_ferry(mut self, exclude_ferry: bool) -> Self {
+        self.exclude_ferry = Some(exclude_ferry);
+        self
+    }
+    /// Whether to exclude link roads marked as ramps, note that some turn channels are also marked as ramps
+    ///
+    /// Default: `false`
+    pub fn exclude_ramp(mut self, exclude_ramp: bool) -> Self {
+        self.exclude_ramp = Some(exclude_ramp);
+        self
+    }
+    /// Whether to exclude roads considered closed due to live traffic closure.
+    ///
+    /// Note:
+    /// - This option cannot be set if the costing option `ignore_closures` is also specified.
+    /// - Ignoring closures at destination and source locations does NOT work for date_time type 0/1 & 2 respectively
+    ///
+    /// Default: `true`
+    pub fn exclude_closures(mut self, exclude_closures: bool) -> Self {
+        self.exclude_closures = Some(exclude_closures);
+        self
+    }
+    /// Lowest road class allowed
+    ///
+    /// Default: [`RoadClass::ServiceOther`]
+    pub fn min_road_class(mut self, min_road_class: RoadClass) -> Self {
+        self.min_road_class = Some(min_road_class);
+        self
+    }
+    /// Highest road class allowed
+    ///
+    /// Default: [`RoadClass::Motorway`]
+    pub fn max_road_class(mut self, max_road_class: RoadClass) -> Self {
+        self.max_road_class = Some(max_road_class);
+        self
+    }
+    /// BETA Will only consider edges that are on or traverse the passed floor level.
+    ///
+    /// Sets `search_cutoff` to a default value of 300 meters if no cutoff value is passed.
+    /// Additionally, if a `search_cutoff` is passed, it will be clamped to 1000 meters.
+    pub fn level(mut self, level: f32) -> Self {
+        self.level = Some(level);
+        self
+    }
+}
+
+/// Road classes from highest to lowest
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[repr(u8)]
+pub enum RoadClass {
+    /// equivalent to OSMs [`highway=motorway`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dmotorway)
+    #[serde(rename = "motorway")]
+    Motorway = 8,
+    /// equivalent to OSMs [`highway=trunk`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dtrunk)
+    #[serde(rename = "trunk")]
+    Trunk = 6,
+    /// equivalent to OSMs [`highway=primary`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dprimary)
+    #[serde(rename = "primary")]
+    Primary = 5,
+    /// equivalent to OSMs [`highway=secondary`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dsecondary)
+    #[serde(rename = "secondary")]
+    Secondary = 4,
+    /// equivalent to OSMs [`highway=tertiary`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dtertiary)
+    #[serde(rename = "tertiary")]
+    Tertiary = 3,
+    /// equivalent to OSMs [`highway=unclassified`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dunclassified)
+    #[serde(rename = "unclassified")]
+    Unclassified = 2,
+    /// equivalent to OSMs [`highway=residential`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dresidential)
+    #[serde(rename = "residential")]
+    Residential = 1,
+    /// equivalent to OSMs [`highway=service`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dservice) or
+    /// or [`highway=other`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dother)
+    #[serde(rename = "service_other")]
+    ServiceOther = 0,
 }
 
 #[cfg(test)]
