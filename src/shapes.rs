@@ -54,7 +54,9 @@ fn decode_shape_polyline6(encoded: &str) -> Vec<ShapePoint> {
     debug_assert!(!encoded.is_empty());
     // six degrees of precision in valhalla
     let inv = 1.0 / 1e6;
-    let mut decoded = Vec::new();
+    // Estimate capacity: polyline6 typically needs 5-10 bytes per coordinate pair
+    let estimated_points = encoded.len() / 8;
+    let mut decoded = Vec::with_capacity(estimated_points);
     let mut previous = [0, 0];
     let mut i = 0;
 
@@ -95,7 +97,7 @@ where
     D: serde::Deserializer<'de>,
 {
     let s = String::deserialize(deserializer)?;
-    Ok(decode_shape_polyline6(s.as_str()))
+    Ok(decode_shape_polyline6(&s))
 }
 #[cfg(test)]
 mod tests {

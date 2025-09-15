@@ -500,7 +500,7 @@ impl Valhalla {
         name: &'static str,
     ) -> Result<Resp, Error> {
         if log::log_enabled!(log::Level::Trace) {
-            let request = serde_json::to_string(&manifest).unwrap();
+            let request = serde_json::to_string(&manifest).map_err(Error::Serde)?;
             trace!("Sending {name} request: {request}");
         }
         let mut url = self.base_url.clone();

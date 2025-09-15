@@ -61,13 +61,12 @@ impl TransitCostingOptions {
     ///
     /// **Tip**: Can be combined with [`Self::filter_routes`] and/or [`Self::filter_operators`]
     #[doc(hidden)] // TODO: enable once this works in valhalla
-    pub fn filter_stops(
-        mut self,
-        ids: impl IntoIterator<Item = impl ToString>,
-        action: Action,
-    ) -> Self {
+    pub fn filter_stops<S>(mut self, ids: impl IntoIterator<Item = S>, action: Action) -> Self
+    where
+        S: Into<String>,
+    {
         let new_filter = Filter {
-            ids: ids.into_iter().map(|s| s.to_string()).collect(),
+            ids: ids.into_iter().map(Into::into).collect(),
             action,
         };
         if let Some(ref mut filters) = self.transit.filters {
@@ -92,13 +91,12 @@ impl TransitCostingOptions {
     /// the OneStop ID `NYC_AUR`, similar with operators/agencies
     ///
     /// **Tip**: Can be combined with [`Self::filter_stops`] and/or [`Self::filter_operators`]
-    pub fn filter_routes(
-        mut self,
-        ids: impl IntoIterator<Item = impl ToString>,
-        action: Action,
-    ) -> Self {
+    pub fn filter_routes<S>(mut self, ids: impl IntoIterator<Item = S>, action: Action) -> Self
+    where
+        S: Into<String>,
+    {
         let new_filter = Filter {
-            ids: ids.into_iter().map(|s| s.to_string()).collect(),
+            ids: ids.into_iter().map(Into::into).collect(),
             action,
         };
         if let Some(ref mut filters) = self.transit.filters {
@@ -123,13 +121,12 @@ impl TransitCostingOptions {
     /// the OneStop ID `NYC_AUR`, similar with operators/agencies
     ///
     /// **Tip**: Can be combined with [`Self::filter_stops`] and/or [`Self::filter_routes`]
-    pub fn filter_operators(
-        mut self,
-        ids: impl IntoIterator<Item = impl ToString>,
-        action: Action,
-    ) -> Self {
+    pub fn filter_operators<S>(mut self, ids: impl IntoIterator<Item = S>, action: Action) -> Self
+    where
+        S: Into<String>,
+    {
         let new_filter = Filter {
-            ids: ids.into_iter().map(|s| s.to_string()).collect(),
+            ids: ids.into_iter().map(Into::into).collect(),
             action,
         };
         if let Some(ref mut filters) = self.transit.filters {
