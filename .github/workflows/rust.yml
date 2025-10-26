@@ -1,9 +1,10 @@
+---
 name: Rust
 
 permissions:
   contents: read
 
-on:
+"on":
   push:
   pull_request:
 
@@ -45,7 +46,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Get early warning of new lints which are regularly introduced in beta channels.
+        # Get early warning of new lints which are regularly introduced in beta
+        # channels.
         toolchain: [stable, beta]
     steps:
       - uses: actions/checkout@v5
