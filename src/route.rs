@@ -206,6 +206,7 @@ pub struct Leg {
     pub summary: Summary,
 
     /// Maneuver information
+    #[serde(default)]
     pub maneuvers: Vec<Maneuver>,
 
     /// The shape of the leg
