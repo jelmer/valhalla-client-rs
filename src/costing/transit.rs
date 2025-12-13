@@ -175,4 +175,65 @@ mod test {
             serde_json::json!({"transit":{}})
         );
     }
+
+    #[test]
+    fn builder_returns_default() {
+        assert_eq!(
+            TransitCostingOptions::builder(),
+            TransitCostingOptions::default()
+        );
+    }
+
+    #[test]
+    fn use_bus_sets_value() {
+        let opts = TransitCostingOptions::builder().use_bus(0.8);
+        assert_eq!(opts.transit.use_bus, Some(0.8));
+    }
+
+    #[test]
+    fn use_rail_sets_value() {
+        let opts = TransitCostingOptions::builder().use_rail(0.9);
+        assert_eq!(opts.transit.use_rail, Some(0.9));
+    }
+
+    #[test]
+    fn use_transfers_sets_value() {
+        let opts = TransitCostingOptions::builder().use_transfers(0.5);
+        assert_eq!(opts.transit.use_transfers, Some(0.5));
+    }
+
+    #[test]
+    fn filter_routes_sets_value() {
+        let opts = TransitCostingOptions::builder()
+            .filter_routes(vec!["NYC_AUR", "NYC_BX"], Action::Include);
+        assert!(opts.transit.filters.is_some());
+        let filters = opts.transit.filters.unwrap();
+        assert!(filters.routes.is_some());
+        let route_filter = filters.routes.unwrap();
+        assert_eq!(route_filter.ids, vec!["NYC_AUR", "NYC_BX"]);
+        assert_eq!(route_filter.action, Action::Include);
+    }
+
+    #[test]
+    fn filter_operators_sets_value() {
+        let opts =
+            TransitCostingOptions::builder().filter_operators(vec!["NYC_MTA"], Action::Exclude);
+        assert!(opts.transit.filters.is_some());
+        let filters = opts.transit.filters.unwrap();
+        assert!(filters.operators.is_some());
+        let op_filter = filters.operators.unwrap();
+        assert_eq!(op_filter.ids, vec!["NYC_MTA"]);
+        assert_eq!(op_filter.action, Action::Exclude);
+    }
+
+    #[test]
+    fn chaining_works() {
+        let opts = TransitCostingOptions::builder()
+            .use_bus(0.7)
+            .use_rail(0.9)
+            .use_transfers(0.4);
+        assert_eq!(opts.transit.use_bus, Some(0.7));
+        assert_eq!(opts.transit.use_rail, Some(0.9));
+        assert_eq!(opts.transit.use_transfers, Some(0.4));
+    }
 }

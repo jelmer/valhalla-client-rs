@@ -267,4 +267,119 @@ mod test {
             serde_json::json!({"bicycle":{}})
         );
     }
+
+    #[test]
+    fn builder_returns_default() {
+        assert_eq!(
+            BicycleCostingOptions::builder(),
+            BicycleCostingOptions::default()
+        );
+    }
+
+    #[test]
+    fn bicycle_type_sets_value() {
+        let opts = BicycleCostingOptions::builder().bicycle_type(BicycleType::Road);
+        assert_eq!(opts.bicycle.bicycle_type, Some(BicycleType::Road));
+    }
+
+    #[test]
+    fn cycling_speed_sets_value() {
+        let opts = BicycleCostingOptions::builder().cycling_speed(20.0);
+        assert_eq!(opts.bicycle.cycling_speed, Some(20.0));
+    }
+
+    #[test]
+    fn use_roads_sets_value() {
+        let opts = BicycleCostingOptions::builder().use_roads(0.5);
+        assert_eq!(opts.bicycle.use_roads, Some(0.5));
+    }
+
+    #[test]
+    fn use_hills_sets_value() {
+        let opts = BicycleCostingOptions::builder().use_hills(0.3);
+        assert_eq!(opts.bicycle.use_hills, Some(0.3));
+    }
+
+    #[test]
+    fn use_ferry_sets_value() {
+        let opts = BicycleCostingOptions::builder().use_ferry(0.8);
+        assert_eq!(opts.bicycle.use_ferry, Some(0.8));
+    }
+
+    #[test]
+    fn use_living_streets_sets_value() {
+        let opts = BicycleCostingOptions::builder().use_living_streets(0.6);
+        assert_eq!(opts.bicycle.use_living_streets, Some(0.6));
+    }
+
+    #[test]
+    fn avoid_bad_surfaces_sets_value() {
+        let opts = BicycleCostingOptions::builder().avoid_bad_surfaces(0.7);
+        assert_eq!(opts.bicycle.avoid_bad_surfaces, Some(0.7));
+    }
+
+    #[test]
+    fn bss_return_cost_sets_value() {
+        let opts = BicycleCostingOptions::builder().bss_return_cost(30.0);
+        assert_eq!(opts.bicycle.bss_return_cost, Some(30.0));
+    }
+
+    #[test]
+    fn bss_return_penalty_sets_value() {
+        let opts = BicycleCostingOptions::builder().bss_return_penalty(200.0);
+        assert_eq!(opts.bicycle.bss_return_penalty, Some(200.0));
+    }
+
+    #[test]
+    fn only_consider_quasi_shortest_sets_value() {
+        let opts = BicycleCostingOptions::builder().only_consider_quasi_shortest();
+        assert_eq!(opts.bicycle.shortest, Some(true));
+    }
+
+    #[test]
+    fn maneuver_penalty_sets_value() {
+        let opts = BicycleCostingOptions::builder().maneuver_penalty(15.0);
+        assert_eq!(opts.bicycle.maneuver_penalty, Some(15.0));
+    }
+
+    #[test]
+    fn gate_cost_sets_value() {
+        let opts = BicycleCostingOptions::builder().gate_cost(10.0);
+        assert_eq!(opts.bicycle.gate_cost, Some(10.0));
+    }
+
+    #[test]
+    fn gate_penalty_sets_value() {
+        let opts = BicycleCostingOptions::builder().gate_penalty(100.0);
+        assert_eq!(opts.bicycle.gate_penalty, Some(100.0));
+    }
+
+    #[test]
+    fn country_crossing_cost_sets_value() {
+        let opts = BicycleCostingOptions::builder().country_crossing_cost(300.0);
+        assert_eq!(opts.bicycle.country_crossing_cost, Some(300.0));
+    }
+
+    #[test]
+    fn country_crossing_penalty_sets_value() {
+        let opts = BicycleCostingOptions::builder().country_crossing_penalty(0.0);
+        assert_eq!(opts.bicycle.country_crossing_penalty, Some(0.0));
+    }
+
+    #[test]
+    fn service_penalty_sets_value() {
+        let opts = BicycleCostingOptions::builder().service_penalty(15.0);
+        assert_eq!(opts.bicycle.service_penalty, Some(15.0));
+    }
+
+    #[test]
+    fn chaining_works() {
+        let opts = BicycleCostingOptions::builder()
+            .cycling_speed(22.0)
+            .use_roads(0.6)
+            .use_hills(0.4);
+        assert_eq!(opts.bicycle.cycling_speed, Some(22.0));
+        assert_eq!(opts.bicycle.use_roads, Some(0.6));
+        assert_eq!(opts.bicycle.use_hills, Some(0.4));
+    }
 }

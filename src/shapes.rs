@@ -102,6 +102,29 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shapepoint_to_geo_types_point() {
+        let sp = ShapePoint {
+            lon: 11.670365,
+            lat: 48.268722,
+        };
+        let pt: geo_types::Point = (&sp).into();
+        assert_eq!(pt.x(), 11.670365);
+        assert_eq!(pt.y(), 48.268722);
+    }
+
+    #[test]
+    fn shapepoint_to_coordinate() {
+        let sp = ShapePoint {
+            lon: 11.670365,
+            lat: 48.268722,
+        };
+        let coord: super::super::Coordinate = sp.into();
+        assert_eq!(coord.0, 11.670365_f32);
+        assert_eq!(coord.1, 48.268722_f32);
+    }
+
     #[test]
     fn decode_shape_works_america() {
         // shape from https://valhalla1.openstreetmap.de/optimized_route?json=%7B%22locations%22%3A%5B%7B%22lat%22%3A40.042072%2C%22lon%22%3A-76.306572%7D%2C%7B%22lat%22%3A39.991889%2C%22lon%22%3A-76.781939%7D%2C%7B%22lat%22%3A39.984460%2C%22lon%22%3A-76.695075%7D%2C%7B%22lat%22%3A39.996900%2C%22lon%22%3A-76.768704%7D%2C%7B%22lat%22%3A39.983901%2C%22lon%22%3A-76.707604%7D%5D%2C%22costing%22%3A%22auto%22%2C%22units%22%3A%22kilometers%22%7D
