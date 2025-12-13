@@ -461,4 +461,230 @@ mod test {
             serde_json::json!({"auto":{}})
         );
     }
+
+    #[test]
+    fn builder_returns_default() {
+        assert_eq!(AutoCostingOptions::builder(), AutoCostingOptions::default());
+    }
+
+    #[test]
+    fn gate_cost_sets_value() {
+        let opts = AutoCostingOptions::builder().gate_cost(45.0);
+        assert_eq!(opts.auto.gate_cost, Some(45.0));
+    }
+
+    #[test]
+    fn gate_penalty_sets_value() {
+        let opts = AutoCostingOptions::builder().gate_penalty(500.0);
+        assert_eq!(opts.auto.gate_penalty, Some(500.0));
+    }
+
+    #[test]
+    fn private_access_penalty_sets_value() {
+        let opts = AutoCostingOptions::builder().private_access_penalty(600.0);
+        assert_eq!(opts.auto.private_access_penalty, Some(600.0));
+    }
+
+    #[test]
+    fn destination_only_penalty_sets_value() {
+        let opts = AutoCostingOptions::builder().destination_only_penalty(100.0);
+        assert_eq!(opts.auto.destination_only_penalty, Some(100.0));
+    }
+
+    #[test]
+    fn toll_booth_cost_sets_value() {
+        let opts = AutoCostingOptions::builder().toll_booth_cost(20.0);
+        assert_eq!(opts.auto.toll_booth_cost, Some(20.0));
+    }
+
+    #[test]
+    fn toll_booth_penalty_sets_value() {
+        let opts = AutoCostingOptions::builder().toll_booth_penalty(250.0);
+        assert_eq!(opts.auto.toll_booth_penalty, Some(250.0));
+    }
+
+    #[test]
+    fn ferry_cost_sets_value() {
+        let opts = AutoCostingOptions::builder().ferry_cost(400.0);
+        assert_eq!(opts.auto.ferry_cost, Some(400.0));
+    }
+
+    #[test]
+    fn use_ferry_sets_value() {
+        let opts = AutoCostingOptions::builder().use_ferry(0.5);
+        assert_eq!(opts.auto.use_ferry, Some(0.5));
+    }
+
+    #[test]
+    fn use_highways_sets_value() {
+        let opts = AutoCostingOptions::builder().use_highways(0.8);
+        assert_eq!(opts.auto.use_highways, Some(0.8));
+    }
+
+    #[test]
+    fn use_tolls_sets_value() {
+        let opts = AutoCostingOptions::builder().use_tolls(0.3);
+        assert_eq!(opts.auto.use_tolls, Some(0.3));
+    }
+
+    #[test]
+    fn use_living_streets_sets_value() {
+        let opts = AutoCostingOptions::builder().use_living_streets(0.6);
+        assert_eq!(opts.auto.use_living_streets, Some(0.6));
+    }
+
+    #[test]
+    fn use_tracks_sets_value() {
+        let opts = AutoCostingOptions::builder().use_tracks(0.2);
+        assert_eq!(opts.auto.use_tracks, Some(0.2));
+    }
+
+    #[test]
+    fn service_penalty_sets_value() {
+        let opts = AutoCostingOptions::builder().service_penalty(10.0);
+        assert_eq!(opts.auto.service_penalty, Some(10.0));
+    }
+
+    #[test]
+    fn service_factor_sets_value() {
+        let opts = AutoCostingOptions::builder().service_factor(1.5);
+        assert_eq!(opts.auto.service_factor, Some(1.5));
+    }
+
+    #[test]
+    fn country_crossing_cost_sets_value() {
+        let opts = AutoCostingOptions::builder().country_crossing_cost(600.0);
+        assert_eq!(opts.auto.country_crossing_cost, Some(600.0));
+    }
+
+    #[test]
+    fn country_crossing_penalty_sets_value() {
+        let opts = AutoCostingOptions::builder().country_crossing_penalty(0.0);
+        assert_eq!(opts.auto.country_crossing_penalty, Some(0.0));
+    }
+
+    #[test]
+    fn use_distance_sets_value() {
+        let opts = AutoCostingOptions::builder().use_distance(0.9);
+        assert_eq!(opts.auto.use_distance, Some(0.9));
+    }
+
+    #[test]
+    fn disable_hierarchy_pruning_sets_value() {
+        let opts = AutoCostingOptions::builder().disable_hierarchy_pruning();
+        assert_eq!(opts.auto.disable_hierarchy_pruning, Some(true));
+    }
+
+    #[test]
+    fn only_consider_quasi_shortest_sets_value() {
+        let opts = AutoCostingOptions::builder().only_consider_quasi_shortest();
+        assert_eq!(opts.auto.shortest, Some(true));
+    }
+
+    #[test]
+    fn top_speed_sets_value() {
+        let opts = AutoCostingOptions::builder().top_speed(120.0);
+        assert_eq!(opts.auto.top_speed, Some(120.0));
+    }
+
+    #[test]
+    fn fixed_speed_sets_value() {
+        let opts = AutoCostingOptions::builder().fixed_speed(80);
+        assert_eq!(opts.auto.fixed_speed, Some(80));
+    }
+
+    #[test]
+    fn closure_factor_sets_value() {
+        let opts = AutoCostingOptions::builder().closure_factor(5.0);
+        assert_eq!(opts.auto.closure_factor, Some(5.0));
+    }
+
+    #[test]
+    fn ignore_closures_sets_value() {
+        let opts = AutoCostingOptions::builder().ignore_closures();
+        assert_eq!(opts.auto.ignore_closures, Some(true));
+    }
+
+    #[test]
+    fn ignore_restrictions_sets_value() {
+        let opts = AutoCostingOptions::builder().ignore_restrictions();
+        assert_eq!(opts.auto.ignore_restrictions, Some(true));
+    }
+
+    #[test]
+    fn ignore_oneways_sets_value() {
+        let opts = AutoCostingOptions::builder().ignore_oneways();
+        assert_eq!(opts.auto.ignore_oneways, Some(true));
+    }
+
+    #[test]
+    fn ignore_non_vehicular_restrictions_sets_value() {
+        let opts = AutoCostingOptions::builder().ignore_non_vehicular_restrictions();
+        assert_eq!(opts.auto.ignore_non_vehicular_restrictions, Some(true));
+    }
+
+    #[test]
+    fn ignore_access_sets_value() {
+        let opts = AutoCostingOptions::builder().ignore_access();
+        assert_eq!(opts.auto.ignore_access, Some(true));
+    }
+
+    #[test]
+    fn speed_types_sets_value() {
+        let opts = AutoCostingOptions::builder().speed_types(UsedSpeedSources::Freeflow);
+        assert_eq!(opts.auto.speed_types, Some(UsedSpeedSources::Freeflow));
+    }
+
+    #[test]
+    fn height_sets_value() {
+        let opts = AutoCostingOptions::builder().height(3.5);
+        assert_eq!(opts.auto.height, Some(3.5));
+    }
+
+    #[test]
+    fn width_sets_value() {
+        let opts = AutoCostingOptions::builder().width(2.5);
+        assert_eq!(opts.auto.width, Some(2.5));
+    }
+
+    #[test]
+    fn exclude_unpaved_sets_value() {
+        let opts = AutoCostingOptions::builder().exclude_unpaved();
+        assert_eq!(opts.auto.exclude_unpaved, Some(true));
+    }
+
+    #[test]
+    fn exclude_cash_only_tolls_sets_value() {
+        let opts = AutoCostingOptions::builder().exclude_cash_only_tolls(true);
+        assert_eq!(opts.auto.exclude_cash_only_tolls, Some(true));
+    }
+
+    #[test]
+    fn include_hov2_sets_value() {
+        let opts = AutoCostingOptions::builder().include_hov2(true);
+        assert_eq!(opts.auto.include_hov2, Some(true));
+    }
+
+    #[test]
+    fn include_hov3_sets_value() {
+        let opts = AutoCostingOptions::builder().include_hov3(true);
+        assert_eq!(opts.auto.include_hov3, Some(true));
+    }
+
+    #[test]
+    fn include_hot_sets_value() {
+        let opts = AutoCostingOptions::builder().include_hot(true);
+        assert_eq!(opts.auto.include_hot, Some(true));
+    }
+
+    #[test]
+    fn chaining_works() {
+        let opts = AutoCostingOptions::builder()
+            .gate_cost(45.0)
+            .use_highways(0.8)
+            .top_speed(120.0);
+        assert_eq!(opts.auto.gate_cost, Some(45.0));
+        assert_eq!(opts.auto.use_highways, Some(0.8));
+        assert_eq!(opts.auto.top_speed, Some(120.0));
+    }
 }
