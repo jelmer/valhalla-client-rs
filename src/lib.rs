@@ -14,6 +14,8 @@ pub mod route;
 pub mod shapes;
 /// Models connected to the healthcheck via the [`status`]-API
 pub mod status;
+/// Models connected to the [`trace_attributes`] map-matching API
+pub mod trace_attributes;
 
 use log::trace;
 use serde::{Deserialize, Serialize};
@@ -166,7 +168,9 @@ pub struct RemoteError {
 /// synchronous ("blocking") client implementation
 #[cfg(feature = "blocking")]
 pub mod blocking {
-    use crate::{elevation, matrix, route, status, Error, VALHALLA_PUBLIC_API_URL};
+    use crate::{
+        elevation, matrix, route, status, trace_attributes, Error, VALHALLA_PUBLIC_API_URL,
+    };
     use std::sync::Arc;
 
     #[derive(Debug, Clone)]
@@ -317,6 +321,34 @@ pub mod blocking {
         pub fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
             self.runtime
                 .block_on(async move { self.client.status(manifest).await })
+        }
+
+        /// Make a trace_attributes request for map matching with edge attributes
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/map-matching/api-reference/> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::trace_attributes::{Manifest, TracePoint};
+        /// use valhalla_client::costing::Costing;
+        ///
+        /// let manifest = Manifest::builder(
+        ///   [TracePoint::new(52.3676, 4.9041), TracePoint::new(52.0907, 5.1214)],
+        ///   Costing::Auto(Default::default()),
+        /// )
+        /// .include_attributes(["edge.surface", "edge.road_class", "edge.length"]);
+        ///
+        /// let response = Valhalla::default()
+        ///   .trace_attributes(manifest).unwrap();
+        /// # assert!(!response.edges.is_empty());
+        /// ```
+        pub fn trace_attributes(
+            &self,
+            manifest: trace_attributes::Manifest,
+        ) -> Result<trace_attributes::Response, Error> {
+            self.runtime
+                .block_on(async move { self.client.trace_attributes(manifest).await })
         }
     }
     impl Default for Valhalla {
@@ -491,6 +523,36 @@ impl Valhalla {
     /// ```
     pub async fn status(&self, manifest: status::Manifest) -> Result<status::Response, Error> {
         self.do_request(manifest, "status", "status").await
+    }
+
+    /// Make a trace_attributes request for map matching with edge attributes
+    ///
+    /// See <https://valhalla.github.io/valhalla/api/map-matching/api-reference/> for details
+    ///
+    /// # Example:
+    /// ```rust
+    /// # async fn trace_attributes() {
+    /// use valhalla_client::Valhalla;
+    /// use valhalla_client::trace_attributes::{Manifest, TracePoint};
+    /// use valhalla_client::costing::Costing;
+    ///
+    /// let manifest = Manifest::builder(
+    ///   [TracePoint::new(52.3676, 4.9041), TracePoint::new(52.0907, 5.1214)],
+    ///   Costing::Auto(Default::default()),
+    /// )
+    /// .include_attributes(["edge.surface", "edge.road_class", "edge.length"]);
+    ///
+    /// let response = Valhalla::default()
+    ///   .trace_attributes(manifest).await.unwrap();
+    /// # assert!(!response.edges.is_empty());
+    /// # }
+    /// ```
+    pub async fn trace_attributes(
+        &self,
+        manifest: trace_attributes::Manifest,
+    ) -> Result<trace_attributes::Response, Error> {
+        self.do_request(manifest, "trace_attributes", "trace_attributes")
+            .await
     }
 
     async fn do_request<Resp: for<'de> serde::Deserialize<'de>>(
