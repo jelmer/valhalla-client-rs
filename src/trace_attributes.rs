@@ -324,6 +324,12 @@ pub enum EdgeUse {
     /// Rail ferry
     #[serde(rename = "rail-ferry")]
     RailFerry,
+    /// Service road
+    ServiceRoad,
+    /// Path
+    Path,
+    /// Living street
+    LivingStreet,
     /// Other use
     Other,
 }
