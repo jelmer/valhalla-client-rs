@@ -326,6 +326,23 @@ pub mod blocking {
         /// Make a trace_attributes request for map matching with edge attributes
         ///
         /// See <https://valhalla.github.io/valhalla/api/map-matching/api-reference/> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::trace_attributes::{Manifest, TracePoint};
+        /// use valhalla_client::costing::Costing;
+        ///
+        /// let manifest = Manifest::builder(
+        ///   [TracePoint::new(52.3676, 4.9041), TracePoint::new(52.0907, 5.1214)],
+        ///   Costing::Auto(Default::default()),
+        /// )
+        /// .include_attributes(["edge.surface", "edge.road_class", "edge.length"]);
+        ///
+        /// let response = Valhalla::default()
+        ///   .trace_attributes(manifest).unwrap();
+        /// # assert!(!response.edges.is_empty());
+        /// ```
         pub fn trace_attributes(
             &self,
             manifest: trace_attributes::Manifest,
@@ -511,6 +528,25 @@ impl Valhalla {
     /// Make a trace_attributes request for map matching with edge attributes
     ///
     /// See <https://valhalla.github.io/valhalla/api/map-matching/api-reference/> for details
+    ///
+    /// # Example:
+    /// ```rust
+    /// # async fn trace_attributes() {
+    /// use valhalla_client::Valhalla;
+    /// use valhalla_client::trace_attributes::{Manifest, TracePoint};
+    /// use valhalla_client::costing::Costing;
+    ///
+    /// let manifest = Manifest::builder(
+    ///   [TracePoint::new(52.3676, 4.9041), TracePoint::new(52.0907, 5.1214)],
+    ///   Costing::Auto(Default::default()),
+    /// )
+    /// .include_attributes(["edge.surface", "edge.road_class", "edge.length"]);
+    ///
+    /// let response = Valhalla::default()
+    ///   .trace_attributes(manifest).await.unwrap();
+    /// # assert!(!response.edges.is_empty());
+    /// # }
+    /// ```
     pub async fn trace_attributes(
         &self,
         manifest: trace_attributes::Manifest,
