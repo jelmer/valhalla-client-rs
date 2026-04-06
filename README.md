@@ -26,7 +26,7 @@ This enables [reading and writing GPX (GPS Exchange Format) files](https://docs.
 
 ## Example
 
-```rust
+```rust,no_run
 // an async version is available at valhalla_client::Valhalla
 use valhalla_client::blocking::Valhalla;
 use valhalla_client::route::{Location, Manifest};
