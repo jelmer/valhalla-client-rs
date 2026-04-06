@@ -182,6 +182,13 @@ pub mod blocking {
     impl Valhalla {
         /// Create a sync [Valhalla](https://valhalla.github.io/valhalla/) client
         pub fn new(base_url: url::Url) -> Self {
+            Self::with_client(base_url.clone(), reqwest::Client::new())
+        }
+
+        /// Create a sync client with a custom [reqwest::Client].
+        ///
+        /// This allows configuring timeouts, user-agents, proxies, etc.
+        pub fn with_client(base_url: url::Url, client: reqwest::Client) -> Self {
             let runtime = tokio::runtime::Builder::new_current_thread()
                 .enable_io()
                 .enable_time()
@@ -189,7 +196,7 @@ pub mod blocking {
                 .expect("tokio runtime can be created");
             Self {
                 runtime: Arc::new(runtime),
-                client: super::Valhalla::new(base_url),
+                client: super::Valhalla::with_client(base_url, client),
             }
         }
 
@@ -361,7 +368,8 @@ pub mod blocking {
     }
 }
 
-const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
+/// The default public Valhalla API URL hosted by OpenStreetMap Germany.
+pub const VALHALLA_PUBLIC_API_URL: &str = "https://valhalla1.openstreetmap.de/";
 #[derive(Debug, Clone)]
 /// async Valhalla client
 pub struct Valhalla {
@@ -372,10 +380,14 @@ pub struct Valhalla {
 impl Valhalla {
     /// Create an async [Valhalla](https://valhalla.github.io/valhalla/) client
     pub fn new(base_url: url::Url) -> Self {
-        Self {
-            client: reqwest::Client::new(),
-            base_url,
-        }
+        Self::with_client(base_url, reqwest::Client::new())
+    }
+
+    /// Create an async client with a custom [reqwest::Client].
+    ///
+    /// This allows configuring timeouts, user-agents, proxies, etc.
+    pub fn with_client(base_url: url::Url, client: reqwest::Client) -> Self {
+        Self { client, base_url }
     }
 
     /// Make a turn-by-turn routing request
