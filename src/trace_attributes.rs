@@ -330,6 +330,8 @@ pub enum EdgeUse {
     Path,
     /// Living street
     LivingStreet,
+    /// Pedestrian crossing
+    PedestrianCrossing,
     /// Other use
     Other,
 }
