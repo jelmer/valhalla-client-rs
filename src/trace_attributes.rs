@@ -369,6 +369,57 @@ pub struct Edge {
     /// Percentage along the edge where the target point lies (last edge only)
     #[serde(default)]
     pub target_percent_along: Option<f64>,
+    /// Heading at the start of the edge in degrees (0-360)
+    #[serde(default)]
+    pub begin_heading: Option<f64>,
+    /// Heading at the end of the edge in degrees (0-360)
+    #[serde(default)]
+    pub end_heading: Option<f64>,
+    /// Speed in kph along the edge
+    #[serde(default)]
+    pub speed: Option<f64>,
+    /// `true` if a toll booth is encountered on this edge
+    #[serde(default)]
+    pub toll: Option<bool>,
+    /// `true` if a tunnel is encountered on this edge
+    #[serde(default)]
+    pub tunnel: Option<bool>,
+    /// `true` if a bridge is encountered on this edge
+    #[serde(default)]
+    pub bridge: Option<bool>,
+    /// `true` if this edge is part of a roundabout
+    #[serde(default)]
+    pub roundabout: Option<bool>,
+    /// `true` if this edge is an internal intersection edge
+    #[serde(default)]
+    pub internal_intersection: Option<bool>,
+    /// The number of signs on the edge
+    #[serde(default)]
+    pub sign: Option<EdgeSign>,
+}
+
+/// Sign information associated with an edge.
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct EdgeSign {
+    /// Exit number elements
+    #[serde(default)]
+    pub exit_number_elements: Vec<SignElement>,
+    /// Exit branch elements
+    #[serde(default)]
+    pub exit_branch_elements: Vec<SignElement>,
+    /// Exit toward elements
+    #[serde(default)]
+    pub exit_toward_elements: Vec<SignElement>,
+    /// Exit name elements
+    #[serde(default)]
+    pub exit_name_elements: Vec<SignElement>,
+}
+
+/// A single element on a sign.
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct SignElement {
+    /// The text of the sign element
+    pub text: String,
 }
 
 /// A matched point in the trace_attributes response.
