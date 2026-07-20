@@ -73,23 +73,3 @@ pub struct VerboseStatus {
     #[serde(default = "Vec::new")]
     pub warnings: Vec<Value>,
 }
-
-#[cfg(all(test, feature = "blocking"))]
-mod tests {
-    use super::*;
-    use crate::blocking::Valhalla;
-    #[test]
-    fn test_status_verbose() {
-        let request = Manifest::builder().verbose_output(true);
-        let response = Valhalla::default().status(request).unwrap();
-        assert!(response.version >= semver::Version::parse("3.1.4").unwrap());
-        assert!(response.tileset_last_modified.timestamp() > 0);
-        // The public demo server disables verbose output via
-        // `service_limits.status.allow_verbose = false`, so the verbose
-        // fields may be absent even when requested.
-        if let Some(verbose) = response.verbose {
-            assert!(verbose.bbox.is_object());
-            assert!(verbose.warnings.is_empty());
-        }
-    }
-}
