@@ -84,8 +84,12 @@ mod tests {
         let response = Valhalla::default().status(request).unwrap();
         assert!(response.version >= semver::Version::parse("3.1.4").unwrap());
         assert!(response.tileset_last_modified.timestamp() > 0);
-        let verbose = response.verbose.unwrap();
-        assert!(verbose.bbox.is_object());
-        assert!(verbose.warnings.is_empty());
+        // The public demo server disables verbose output via
+        // `service_limits.status.allow_verbose = false`, so the verbose
+        // fields may be absent even when requested.
+        if let Some(verbose) = response.verbose {
+            assert!(verbose.bbox.is_object());
+            assert!(verbose.warnings.is_empty());
+        }
     }
 }
