@@ -228,6 +228,40 @@ pub mod blocking {
             self.runtime
                 .block_on(async move { self.client.route(manifest).await })
         }
+
+        /// Make a turn-by-turn routing request
+        /// It return primary and alternative ['Trip'].
+        ///
+        /// See <https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference> for details
+        ///
+        /// # Example:
+        /// ```rust,no_run
+        /// use valhalla_client::blocking::Valhalla;
+        /// use valhalla_client::route::{Location, Manifest,};
+        /// use valhalla_client::costing::Costing;
+        ///
+        /// let amsterdam = Location::new(4.9041, 52.3676);
+        /// let utrecht = Location::new(5.1214, 52.0907);
+        ///
+        /// let manifest = Manifest::builder()
+        ///   .locations([utrecht,amsterdam])
+        ///   .alternates(2)
+        ///   .costing(Costing::Auto(Default::default()))
+        ///   .language("de-De");
+        ///
+        /// let response = Valhalla::default().route_with_alternatives(manifest).unwrap();
+        /// # use valhalla_client::matrix::Response;
+        /// # assert!(response.0.warnings.is_none());
+        /// # assert_eq!(response.0.locations.len(), 2);
+        /// ```
+        pub fn route_with_alternatives(
+            &self,
+            manifest: route::Manifest,
+        ) -> Result<(route::Trip, Vec<route::Trip>), Error> {
+            self.runtime
+                .block_on(async move { self.client.route_with_alternatives(manifest).await })
+        }
+
         /// Make a time-distance matrix routing request
         ///
         /// See <https://valhalla.github.io/valhalla/api/matrix/api-reference> for details
@@ -418,6 +452,46 @@ impl Valhalla {
     pub async fn route(&self, manifest: route::Manifest) -> Result<route::Trip, Error> {
         let response: route::Response = self.do_request(manifest, "route", "route").await?;
         Ok(response.trip)
+    }
+
+    /// Make a turn-by-turn routing request
+    /// It return primary and alternative ['Trip'].
+    ///
+    /// See <https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference> for details
+    ///
+    /// # Example:
+    /// ```rust
+    /// # async fn route(){
+    /// use valhalla_client::Valhalla;
+    /// use valhalla_client::route::{Location, Manifest,};
+    /// use valhalla_client::costing::Costing;
+    ///
+    /// let amsterdam = Location::new(4.9041, 52.3676);
+    /// let utrecht = Location::new(5.1214, 52.0907);
+    ///
+    /// let manifest = Manifest::builder()
+    ///   .locations([utrecht,amsterdam])
+    ///   .alternates(2)
+    ///   .costing(Costing::Auto(Default::default()))
+    ///   .language("de-De");
+    ///
+    /// let response = Valhalla::default().route_with_alternatives(manifest).await.unwrap();
+    /// # assert!(response.0.warnings.is_none());
+    /// # assert_eq!(response.0.locations.len(), 2);
+    /// # }
+    /// ```
+    pub async fn route_with_alternatives(
+        &self,
+        manifest: route::Manifest,
+    ) -> Result<(route::Trip, Vec<route::Trip>), Error> {
+        let response: route::Response = self.do_request(manifest, "route", "route").await?;
+        let alternative_trips = response
+            .alternates
+            .unwrap_or_default()
+            .into_iter()
+            .map(|alt_trip| alt_trip.trip)
+            .collect();
+        Ok((response.trip, alternative_trips))
     }
 
     /// Make a time-distance matrix routing request
