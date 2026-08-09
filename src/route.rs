@@ -691,7 +691,7 @@ impl Manifest {
     /// let response = Valhalla::default()
     ///   .route(manifest)
     ///   .unwrap();
-    /// # assert!(!response.0.legs.is_empty());
+    /// # assert!(!response.legs.is_empty());
     /// ```
     pub fn exclude_polygons(
         mut self,
@@ -731,7 +731,7 @@ impl Manifest {
     /// let response = Valhalla::default()
     ///   .route(manifest)
     ///   .unwrap();
-    /// # assert!(!response.0.legs.is_empty());
+    /// # assert!(!response.legs.is_empty());
     /// ```
     pub fn exclude_polygon(
         mut self,
