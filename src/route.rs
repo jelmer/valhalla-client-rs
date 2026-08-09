@@ -7,6 +7,14 @@ use serde::{Deserialize, Serialize};
 /// Response from the Valhalla route service
 pub(crate) struct Response {
     pub(crate) trip: Trip,
+    pub(crate) alternates: Option<Vec<AlternateTrip>>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+/// Description of an alternative [`Trip`]
+pub(crate) struct AlternateTrip {
+    /// Trip
+    pub trip: Trip,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -683,7 +691,7 @@ impl Manifest {
     /// let response = Valhalla::default()
     ///   .route(manifest)
     ///   .unwrap();
-    /// # assert!(!response.legs.is_empty());
+    /// # assert!(!response.0.legs.is_empty());
     /// ```
     pub fn exclude_polygons(
         mut self,
@@ -723,7 +731,7 @@ impl Manifest {
     /// let response = Valhalla::default()
     ///   .route(manifest)
     ///   .unwrap();
-    /// # assert!(!response.legs.is_empty());
+    /// # assert!(!response.0.legs.is_empty());
     /// ```
     pub fn exclude_polygon(
         mut self,
