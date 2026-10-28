@@ -1262,15 +1262,15 @@ pub struct Lane {
     /// A bitmask indicating all possible turn directions for that lane.
     ///
     /// Formed by combining individual [`TurnLaneDirection`] values using bitwise OR operations.
-    pub(crate) directions: u32,
+    pub(crate) directions: u16,
 
     /// A bitmask indicating active turn directions for continuing along the route without needing additional lane changes.
     /// A lane is marked active if it is the best lane for following the maneuver as intended.
-    pub(crate) active: Option<u32>,
+    pub(crate) active: Option<u16>,
 
     /// A bitmask indicating valid turn directions for following the route initially.
     /// A lane is marked valid if it can be used at the start of the maneuver but might require further lane changes.
-    pub(crate) valid: Option<u32>,
+    pub(crate) valid: Option<u16>,
 }
 
 impl Lane {
@@ -1337,14 +1337,14 @@ impl TurnLaneDirection {
         Self::MergeToRight,
     ];
 
-    fn from_bitmask(mask: u32) -> Vec<Self> {
+    fn from_bitmask(mask: u16) -> Vec<Self> {
         if mask == 0 {
             return vec![Self::Empty];
         }
         Self::ALL_VARIANTS
             .iter()
             .copied()
-            .filter(|&variant| (mask & (variant as u32)) != 0)
+            .filter(|&variant| (mask & (variant as u16)) != 0)
             .collect()
     }
 }
@@ -1352,7 +1352,6 @@ impl TurnLaneDirection {
 #[cfg(test)]
 mod test {
     use super::*;
-    use serde_json::Value::Bool;
     #[test]
     fn serialisation() {
         assert_eq!(
