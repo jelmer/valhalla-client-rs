@@ -37,7 +37,7 @@ pub struct Trip {
     /// Location information is returned in the same form as it is entered.
     ///
     /// Additional fields are added to indicate the side of the street.
-    /// Output can be changed via  via [`Manifest::locations`].
+    /// Output can be changed via [`Manifest::locations`].
     pub locations: Vec<Location>,
     /// This array may contain warning objects informing about deprecated request parameters, clamped values etc.
     pub warnings: Option<Vec<String>>,
@@ -428,6 +428,9 @@ pub struct Maneuver {
     ///
     /// Default: [`BssManeuverType::NoneAction`]
     pub bss_maneuver_type: Option<BssManeuverType>,
+
+    /// Describes lane-level guidance when [`Manifest::turn_lanes`] is enabled
+    pub lanes: Option<Vec<Lane>>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -553,6 +556,7 @@ pub struct Manifest {
     prioritize_bidirectional: Option<bool>,
     roundabout_exits: Option<bool>,
     date_time: Option<DateTime>,
+    turn_lanes: Option<bool>,
 }
 
 impl Manifest {
@@ -780,6 +784,13 @@ impl Manifest {
     /// See [`Location::date_time`] if you want a more granular API.
     pub fn date_time(mut self, date_time: DateTime) -> Self {
         self.date_time = Some(date_time);
+        self
+    }
+
+    /// When present and true, each [`Maneuver`] in the route response can include a lanes array describing lane-level guidance.
+    /// The lanes array details possible directions, as well as which lanes are valid or active for following the maneuver.
+    pub fn turn_lanes(mut self, turn_lanes: bool) -> Self {
+        self.turn_lanes = Some(turn_lanes);
         self
     }
 }
@@ -1243,6 +1254,102 @@ pub enum RoadClass {
     /// or [`highway=other`](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dother)
     #[serde(rename = "service_other")]
     ServiceOther = 0,
+}
+
+/// Detailed configuration and routing context for a specific traffic lane.
+#[derive(Deserialize, Debug, Clone)]
+pub struct Lane {
+    /// A bitmask indicating all possible turn directions for that lane.
+    ///
+    /// Formed by combining individual [`TurnLaneDirection`] values using bitwise OR operations.
+    pub(crate) directions: u32,
+
+    /// A bitmask indicating valid turn directions for following the route initially.
+    /// A lane is marked valid if it can be used at the start of the maneuver but might require further lane changes.
+    pub(crate) active: Option<u32>,
+
+    /// A bitmask indicating active turn directions for continuing along the route without needing additional lane changes.
+    /// A lane is marked active if it is the best lane for following the maneuver as intended.
+    pub(crate) valid: Option<u32>,
+}
+
+impl Lane {
+    /// All possible turn directions for that lane.
+    pub fn get_directions(&self) -> Vec<TurnLaneDirection> {
+        TurnLaneDirection::from_bitmask(self.directions)
+    }
+
+    /// Active turn directions
+    pub fn get_active(&self) -> Option<Vec<TurnLaneDirection>> {
+        self.active
+            .map(|mask| TurnLaneDirection::from_bitmask(mask))
+    }
+
+    /// Valid turn directions
+    pub fn get_valid(&self) -> Option<Vec<TurnLaneDirection>> {
+        self.valid.map(|mask| TurnLaneDirection::from_bitmask(mask))
+    }
+}
+
+/// Represents the specific turning directions and configurations available for a lane.
+/// The internal values follow a bitmask layout, allowing individual lane configurations
+#[derive(Default, Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u16)]
+pub enum TurnLaneDirection {
+    /// No turn lane or undefined
+    #[default]
+    Empty = 0,
+    /// No specific direction
+    None = 1,
+    /// Goes straight
+    Through = 2,
+    /// Turns sharply to the left
+    SharpLeft = 4,
+    /// Turns left
+    Left = 8,
+    /// Turns slightly to the left
+    SlightLeft = 16,
+    /// Turns slightly to the right
+    SlightRight = 32,
+    /// Turns right
+    Right = 64,
+    /// Turns sharply to the right
+    SharpRight = 128,
+    /// U-turn
+    Reverse = 256,
+    /// Lane merges to the left
+    MergeToLeft = 512,
+    /// Lane merges to the right
+    MergeToRight = 1024,
+}
+
+impl TurnLaneDirection {
+    // Excluded Empty
+    const ALL_VARIANTS: &'static [Self] = &[
+        Self::None,
+        Self::Through,
+        Self::SharpLeft,
+        Self::Left,
+        Self::SlightLeft,
+        Self::SlightRight,
+        Self::Right,
+        Self::SharpRight,
+        Self::Reverse,
+        Self::MergeToLeft,
+        Self::MergeToRight,
+    ];
+
+    fn from_bitmask(mask: u32) -> Vec<Self> {
+        if mask == 0 {
+            return vec![Self::Empty];
+        }
+        Self::ALL_VARIANTS
+            .iter()
+            .copied()
+            .take_while(|&variant| (variant as u32) <= mask)
+            .filter(|&variant| (mask & (variant as u32)) != 0)
+            .collect()
+    }
 }
 
 #[cfg(test)]
