@@ -1264,37 +1264,35 @@ pub struct Lane {
     /// Formed by combining individual [`TurnLaneDirection`] values using bitwise OR operations.
     pub(crate) directions: u32,
 
-    /// A bitmask indicating valid turn directions for following the route initially.
-    /// A lane is marked valid if it can be used at the start of the maneuver but might require further lane changes.
-    pub(crate) active: Option<u32>,
-
     /// A bitmask indicating active turn directions for continuing along the route without needing additional lane changes.
     /// A lane is marked active if it is the best lane for following the maneuver as intended.
+    pub(crate) active: Option<u32>,
+
+    /// A bitmask indicating valid turn directions for following the route initially.
+    /// A lane is marked valid if it can be used at the start of the maneuver but might require further lane changes.
     pub(crate) valid: Option<u32>,
 }
 
 impl Lane {
     /// All possible turn directions for that lane.
-    pub fn get_directions(&self) -> Vec<TurnLaneDirection> {
+    pub fn directions(&self) -> Vec<TurnLaneDirection> {
         TurnLaneDirection::from_bitmask(self.directions)
     }
 
     /// Active turn directions
-    pub fn get_active(&self) -> Option<Vec<TurnLaneDirection>> {
-        self.active
-            .map(|mask| TurnLaneDirection::from_bitmask(mask))
+    pub fn active(&self) -> Option<Vec<TurnLaneDirection>> {
+        self.active.map(TurnLaneDirection::from_bitmask)
     }
 
     /// Valid turn directions
-    pub fn get_valid(&self) -> Option<Vec<TurnLaneDirection>> {
-        self.valid.map(|mask| TurnLaneDirection::from_bitmask(mask))
+    pub fn valid(&self) -> Option<Vec<TurnLaneDirection>> {
+        self.valid.map(TurnLaneDirection::from_bitmask)
     }
 }
 
 /// Represents the specific turning directions and configurations available for a lane.
 /// The internal values follow a bitmask layout, allowing individual lane configurations
 #[derive(Default, Clone, Copy, Debug, PartialEq, Eq)]
-#[repr(u16)]
 pub enum TurnLaneDirection {
     /// No turn lane or undefined
     #[default]
@@ -1346,7 +1344,6 @@ impl TurnLaneDirection {
         Self::ALL_VARIANTS
             .iter()
             .copied()
-            .take_while(|&variant| (variant as u32) <= mask)
             .filter(|&variant| (mask & (variant as u32)) != 0)
             .collect()
     }
@@ -1355,11 +1352,17 @@ impl TurnLaneDirection {
 #[cfg(test)]
 mod test {
     use super::*;
+    use serde_json::Value::Bool;
     #[test]
     fn serialisation() {
         assert_eq!(
             serde_json::to_value(Manifest::default()).unwrap(),
             serde_json::json!({"locations": []})
+        );
+
+        assert_eq!(
+            serde_json::to_value(Manifest::default().turn_lanes(true)).unwrap(),
+            serde_json::json!({"locations": [], "turn_lanes": true})
         );
     }
 }
