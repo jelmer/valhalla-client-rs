@@ -1,6 +1,7 @@
 use crate::costing;
 pub use crate::shapes::ShapePoint;
 pub use crate::DateTime;
+use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug, Clone)]
@@ -235,8 +236,9 @@ impl From<&Leg> for gpx::TrackSegment {
     }
 }
 
-#[derive(serde_repr::Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(serde::Deserialize, TryFromPrimitive, Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(missing_docs)]
+#[serde(from = "RawManeuver")]
 #[repr(i8)]
 /// The type of maneuver
 pub enum ManeuverType {
@@ -285,6 +287,24 @@ pub enum ManeuverType {
     EscalatorEnter,
     BuildingEnter,
     BuildingExit,
+    LevelChange,
+    ParkVehicle,
+}
+
+#[derive(Deserialize)]
+#[serde(transparent)]
+struct RawManeuver(i8);
+
+impl From<RawManeuver> for ManeuverType {
+    fn from(raw: RawManeuver) -> Self {
+        Self::try_from(raw.0).unwrap_or_else(|_| {
+            log::error!(
+                "Received unknown ManeuverType value: {}, defaulting to None",
+                raw.0
+            );
+            Self::None
+        })
+    }
 }
 
 #[derive(Deserialize, Default, Clone, Debug)]
@@ -1363,5 +1383,16 @@ mod test {
             serde_json::to_value(Manifest::default().turn_lanes(true)).unwrap(),
             serde_json::json!({"locations": [], "turn_lanes": true})
         );
+    }
+
+    #[test]
+    fn maneuvers_deserialization() {
+        let none: ManeuverType = serde_json::from_str("0").unwrap();
+        let start: ManeuverType = serde_json::from_str("1").unwrap();
+        let unknown: ManeuverType = serde_json::from_str("-1").unwrap();
+
+        assert_eq!(none, ManeuverType::None);
+        assert_eq!(start, ManeuverType::Start);
+        assert_eq!(unknown, ManeuverType::None);
     }
 }
